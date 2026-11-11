@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הספרייה הלאומית: הבניין</title>
+<meta name="description" content="סיור בבניין הספרייה הלאומית בירושלים (Herzog & de Meuron, 2023): המסה, הגג, החזית, אולם הקריאה והמחסן שמתחת לאדמה.">
+<meta name="theme-color" content="#16140f">
+<link rel="preload" href="assets/fonts/HadassahFriedlaenderTRIAL-Light.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/HadassahFriedlaenderTRIAL-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/img/hero.jpg" as="image">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body class="is-loading">
+
+<div class="cursor" aria-hidden="true"><svg class="cursor__star" viewBox="0 0 24 24"><path d="M24,12 A12,12 0 0 0 12,24 A12,12 0 0 0 0,12 A12,12 0 0 0 12,0 A12,12 0 0 0 24,12 Z"/></svg></div>
+
+<div class="loader" aria-hidden="true">
+  <canvas class="loader__wall"></canvas>
+  <div class="loader__inner">
+    <p class="loader__name">הספרייה הלאומית</p>
+    <div class="loader__line"><i></i></div>
+    <p class="loader__count"><span class="loader__num">0</span></p>
+  </div>
+</div>
+
+<canvas class="gl" aria-hidden="true"></canvas>
+<div class="hotspots" aria-hidden="true"></div>
+
+<header class="nav">
+  <div class="nav__pill">
+    <button class="nav__menu" aria-expanded="false" aria-controls="menu">
+      <span class="nav__burger"><i></i><i></i></span><span>פרקים</span>
+    </button>
+    <a href="#hero" class="nav__logo" data-scroll>הספרייה הלאומית</a>
+    <a href="#monolith" class="nav__cta" data-scroll>
+      <span>סיור במבנה</span><svg viewBox="0 0 24 10" aria-hidden="true"><path d="M23 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor"/></svg>
+    </a>
+  </div>
+  <nav class="menu" id="menu" aria-label="פרקים">
+    <ol>
+      <li><a href="#hero" data-scroll><span>00</span><b>פתיחה</b></a></li>
+      <li><a href="#site" data-scroll><span>01</span><b>המקום</b></a></li>
+      <li><a href="#monolith" data-scroll><span>02</span><b>המבנה</b></a></li>
+      <li><a href="#facade" data-scroll><span>03</span><b>האבן</b></a></li>
+      <li><a href="#well" data-scroll><span>04</span><b>אולם הקריאה</b></a></li>
+      <li><a href="#descent" data-scroll><span>05</span><b>מתחת לאדמה</b></a></li>
+      <li><a href="#light" data-scroll><span>06</span><b>אור</b></a></li>
+      <li><a href="#spaces" data-scroll><span>07</span><b>חללים</b></a></li>
+      <li><a href="#numbers" data-scroll><span>08</span><b>במספרים</b></a></li>
+    </ol>
+  </nav>
+</header>
+
+<aside class="chapter-ind" aria-hidden="true">
+  <span class="chapter-ind__num">00</span>
+  <span class="chapter-ind__bar"><i></i></span>
+  <span class="chapter-ind__name">פתיחה</span>
+</aside>
+
+<main>
+
+  <!-- 00 HERO: a real aerial photograph, moved in depth -->
+  <section id="hero" class="hero" data-chapter="00" data-name="פתיחה">
+    <div class="hero__media">
+      <img class="hero__img" src="assets/img/hero.jpg" alt="הבניין החדש של הספרייה הלאומית במבט אווירי, ומאחוריו הכנסת ומרכז ירושלים" width="2560" height="1440">
+      <canvas class="hero__gl" aria-hidden="true"></canvas>
+    </div>
+    <div class="hero__top">
+      <p class="eyebrow">Herzog &amp; de Meuron · מאן־שנער אדריכלים</p>
+      <p class="eyebrow">ירושלים, 2023</p>
+    </div>
+    <h1 class="hero__title">
+      <span class="hero__line"><span data-split>הספרייה</span></span>
+      <span class="hero__line"><span data-split>הלאומית</span></span>
+    </h1>
+    <div class="hero__bottom">
+      <p class="hero__sub">סיור בבניין החדש: המסה, הגג, החזית, אולם הקריאה, והמחסן שמתחת לאדמה.</p>
+      <p class="credit">צילום: חזקי מוזס · CC BY-SA 4.0</p>
+    </div>
+  </section>
+
+  <!-- 01 SITE -->
+  <section id="site" class="paper site" data-chapter="01" data-name="המקום">
+    <div class="site__pin">
+      <div class="site__text">
+        <p class="label">01 · המקום</p>
+        <p class="site__p" data-words>בקריית הלאום בירושלים, מול הכנסת וליד מוזיאון ישראל, עומד נפח אחד של אבן מעל שתי קומות של זכוכית. הבניין הונמך בכוונה כדי שלא יאפיל על הכנסת, ולכן כשני שלישים משטחו נמצאים מתחת לאדמה.</p>
+        <a href="#monolith" class="btn" data-scroll><span>לסיור בתלת־ממד</span><svg viewBox="0 0 24 10" aria-hidden="true"><path d="M23 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor"/></svg></a>
+      </div>
+      <div class="site__media">
+        <figure class="site__fig site__fig--a"><img src="assets/img/curve.jpg" alt="החזית הארוכה של הבניין מתעקלת ועולה אל הקצה הדרומי הגבוה" loading="lazy"></figure>
+        <figure class="site__fig site__fig--b"><img src="assets/img/end.jpg" alt="הקצה הצפוני של הבניין: מסת אבן מעל קומת קרקע מזכוכית" loading="lazy"><figcaption class="credit">מיכל פריימן · CC BY 2.5</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 THE BUILDING (3D) -->
+  <section id="monolith" class="s3d monolith" data-chapter="02" data-name="המבנה">
+    <div class="stage">
+      <div class="stage__chapters">
+        <article class="chap" data-i="0">
+          <p class="label">02.1 · בסיס</p>
+          <h2 class="chap__title">קומות זכוכית</h2>
+          <p class="chap__body">שתי הקומות התחתונות הן תיבות זכוכית במסגרות עץ. מסת האבן מונחת מעליהן, בולטת הרחק מעבר להן ומצלה עליהן. בקצה אחד הבליטה מגיעה לכ־26 מטר ויוצרת רחבה מקורה.</p>
+        </article>
+        <article class="chap" data-i="1">
+          <p class="label">02.2 · מסה</p>
+          <h2 class="chap__title">נפח אחד</h2>
+          <p class="chap__body">בתוכנית הנפח קרוב למשולש, כמו המגרש. שלוש מהחזיתות מתעקלות בעדינות, והחזית הדרומית ישרה. היא גם החלק הגבוה ביותר, עד מגבלת הגובה של האתר.</p>
+        </article>
+        <article class="chap" data-i="2">
+          <p class="label">02.3 · גג</p>
+          <h2 class="chap__title">גג קעור</h2>
+          <p class="chap__body">הגג שוקע בין שני הקצוות המוגבהים של הבניין. במרכזו צוהר עגול, ומסביבו טבעת כהה של 621 לוחות סולאריים. מתחת לצוהר נמצא אולם הקריאה המרכזי.</p>
+        </article>
+        <article class="chap" data-i="3">
+          <p class="label">02.4 · חלונות</p>
+          <h2 class="chap__title">כ־250 חלונות</h2>
+          <p class="chap__body">הדוגמה של הרווחים בין לוחות האבן נמשכת אל החלונות: כ־250 פתחים מזוגגים ב־19 צורות, שקועים בעומק האבן כך שהיא מצלה על הזכוכית. בערב הם מאירים מבפנים.</p>
+        </article>
+      </div>
+      <div class="stage__rail">
+        <span class="stage__count"><b>01</b> / 04</span>
+        <span class="stage__bar"><i></i></span>
+      </div>
+      <p class="stage__note">מודל משוער, לפי התוכניות והחתכים של האדריכלים</p>
+    </div>
+  </section>
+
+  <!-- 03 THE STONE -->
+  <section id="facade" class="ink facade" data-chapter="03" data-name="האבן">
+    <div class="facade__head">
+      <p class="label">03 · חזית</p>
+      <h2 class="big-title" data-split>האבן</h2>
+      <p class="facade__lead">לוחות אבן גיר משובצים בפאנלים טרומיים של בטון. ברווחים שבין האבנים הבטון נשאר חשוף, בדוגמה שנגזרה מהאופן שבו חומות האבן העתיקות של ירושלים נשחקות. סיתות קל על כל המשטח מאחד את האבן ואת הבטון למסה אחת.</p>
+    </div>
+    <figure class="torch">
+      <img class="torch__base" src="assets/img/facade.jpg" alt="חזית האבן מקרוב: לוחות מעוגלים ושורת חלונות בצורת כוכב" loading="lazy">
+      <img class="torch__lit" src="assets/img/facade.jpg" alt="" aria-hidden="true" loading="lazy">
+      <figcaption class="torch__hint">הזיזו את הסמן על הקיר</figcaption>
+      <span class="credit torch__credit">מיכל פריימן · CC BY 2.5</span>
+    </figure>
+    <div class="joints">
+      <div class="joints__head">
+        <h3 class="joints__title">מהרווח אל החלון</h3>
+        <p>החלונות הם אותם רווחים, רק עמוקים יותר ומזוגגים. בשרטוט מופיעה הצורה הפשוטה שבהם: הכוכב שנשאר בין ארבע פינות מעוגלות. <span class="joints__hint">העבירו את הסמן על השרטוט כדי לפתוח חלונות.</span></p>
+      </div>
+      <canvas class="joints__cv" aria-label="שרטוט של לוחות אבן מעוגלים והפתחים שביניהם"></canvas>
+      <figure class="joints__fig"><img src="assets/img/stone-close.jpg" alt="מבט מקרוב על הפתחים שבין לוחות האבן" loading="lazy"></figure>
+    </div>
+  </section>
+
+  <!-- 04 READING HALL -->
+  <section id="well" class="ink well" data-chapter="04" data-name="אולם הקריאה">
+    <div class="well__pin">
+      <figure class="well__fig"><img src="assets/img/hall-wide.jpg" alt="אולם הקריאה הראשי: שלוש קומות של גלריות עגולות עם מדפי ספרים, ומעליהן הצוהר העגול" loading="lazy"></figure>
+      <div class="well__text">
+        <p class="label">04 · פנים</p>
+        <h2 class="big-title big-title--light" data-split>אולם הקריאה</h2>
+        <p class="well__body">במרכז הבניין עולה חלל של מעגלים מוסטים זה מזה. הוא עובר דרך כל הקומות ומסתיים בצוהר העגול שבגג. אולם הקריאה הראשי תופס שלוש קומות סביבו, ומדפי עץ מקיפים אותו.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRIPTYCH -->
+  <section class="paper triptych" data-chapter="04" data-name="אולם הקריאה">
+    <div class="triptych__pin">
+      <figure class="tri tri--side tri--r"><img src="assets/img/hall.jpg" alt="אולם הקריאה, מדפים ושולחנות תחת תקרה של לוחות מעוגלים" loading="lazy"></figure>
+      <figure class="tri tri--center"><img src="assets/img/ceiling.jpg" alt="אולם הקריאה הראשי: גלריה עגולה, תקרה של לוחות מעוגלים ופתח אל הצוהר" loading="lazy"></figure>
+      <figure class="tri tri--side tri--l"><img src="assets/img/oculus.jpg" alt="הצוהר העגול במבט מלמטה, דרך פתח בתקרה" loading="lazy"></figure>
+      <div class="triptych__cap">
+        <p><b class="odo" data-count="200000">0</b> ספרים על מדפים פתוחים</p>
+        <p><b class="odo" data-count="600">0</b> מקומות ישיבה</p>
+      </div>
+      <p class="credit triptych__credit">מיכל פריימן, ליזי שאנן · CC BY 2.5</p>
+    </div>
+  </section>
+
+  <!-- DESCENT: down through the eye of the stair -->
+  <section id="descent" class="ink descent" data-chapter="05" data-name="מתחת לאדמה">
+    <div class="descent__pin">
+      <div class="descent__view"><img class="descent__img" src="assets/img/spiral-real.jpg" alt="מדרגות לולייניות עטופות עץ באולם הקריאה, במבט מלמעלה, וקורא ליד המעקה" width="1600" height="1197" loading="lazy"></div>
+      <svg class="descent__rings" aria-hidden="true"><circle r="0"/><circle r="0"/><circle r="0"/></svg>
+      <div class="descent__dark"></div>
+      <div class="descent__cap">
+        <p class="label">בין הקומות</p>
+        <p>מדרגות לולייניות, במבט מלמעלה. המשיכו לגלול כדי לרדת דרך החלל שבמרכזן, אל מתחת לאדמה.</p>
+        <p class="credit">צילום: ליזי שאנן · CC BY 2.5</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 THE STORE -->
+  <section id="vault" class="ink store" data-chapter="05" data-name="מתחת לאדמה">
+    <div class="store__pin">
+      <figure class="store__fig"><img class="store__img" src="assets/img/store-aisle.jpg" alt="מעבר צר וגבוה בין שני קירות של מכלי אחסון במחסן האוטומטי" width="1707" height="2560" loading="lazy"></figure>
+      <div class="store__text">
+        <p class="label">05 · מתחת לאדמה</p>
+        <h2 class="big-title big-title--light" data-split>המחסן</h2>
+        <p class="store__body">מתחת לבניין נמצא מחסן אוטומטי בגובה של כ־20 מטר, ובו כ־4 מיליון כרכים ב־50,000 מכלים. מנופים רובוטיים נעים בין המדפים במהירות של עד 6 מטר בשנייה ומביאים את המכל אל עמדת האיסוף, ושם קרן לייזר מצביעה על הספר שהוזמן.</p>
+      </div>
+      <ul class="vault__stats">
+        <li><b class="odo" data-count="4000000">0</b><span>כרכים</span></li>
+        <li><b class="odo" data-count="50000">0</b><span>מכלי אחסון</span></li>
+        <li><b><span class="odo" data-count="20">0</span> מ׳</b><span>גובה המחסן, בערך</span></li>
+        <li><b><span class="odo" data-count="6">0</span> מ׳/שנ׳</b><span>מהירות המנופים</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="ink under" data-chapter="05" data-name="מתחת לאדמה">
+    <article class="ucard">
+      <figure class="ucard__fig"><img src="assets/img/store-racks.jpg" alt="מדפי המחסן האוטומטי: שורות של מכלים אפורים במסגרות פלדה" loading="lazy"></figure>
+      <h3>בלי חמצן, כמעט</h3>
+      <p>ריכוז החמצן באוויר המחסן מופחת כדי למנוע שריפה. טכנאי שנכנס פנימה נושא איתו בלון חמצן ומד רוויה.</p>
+    </article>
+    <article class="ucard">
+      <figure class="ucard__fig"><img src="assets/img/stair-dark.jpg" alt="מבקרים ליד מדרגות בטון כהות, מול חלון שדרכו רואים את המחסן" loading="lazy"></figure>
+      <h3>חלון אל המחסן</h3>
+      <p>מדרגות בטון כהות יורדות אל חלון פנורמי. דרכו המבקרים רואים את המנופים פועלים.</p>
+    </article>
+    <article class="ucard">
+      <figure class="ucard__fig"><img src="assets/img/rock-store.jpg" alt="מסדרון תת־קרקעי, ולאורכו קיר של אבנים בכלובי רשת" loading="lazy"></figure>
+      <h3>מאגר האבנים</h3>
+      <p>מתחת לחניון נמצא מאגר של כ־270,000 אבנים שנחצבו באתר עצמו. בלילה מזרימים דרכן אוויר קר, וביום הוא מקרר את הבניין. לפי ההערכה זה חוסך 20% עד 30% מאנרגיית הקירור.</p>
+    </article>
+  </section>
+
+  <!-- 06 LIGHT -->
+  <section id="light" class="ink light" data-chapter="06" data-name="אור">
+    <div class="light__hero">
+      <img class="light__img" src="assets/img/dusk.jpg" alt="הבניין בשעת דמדומים: שורת החלונות שבאבן מאירה מבפנים" loading="lazy">
+      <h2 class="light__title" data-split>אור דרך האבן</h2>
+    </div>
+    <div class="light__split">
+      <div class="light__figs">
+        <figure class="light__fig"><img src="assets/img/windowview.jpg" alt="מבט החוצה דרך פתח צר בין האבנים" loading="lazy"><figcaption class="credit">Gveret Tered · CC BY-SA 4.0</figcaption></figure>
+        <figure class="light__fig2"><img src="assets/img/silhouette.jpg" alt="מבקרים בצללית מול קיר מבפנים, ואור נכנס דרך פתחים בצורת כוכב" loading="lazy"><figcaption class="credit">ליזי שאנן · CC BY 2.5</figcaption></figure>
+      </div>
+      <div class="light__copy">
+        <p class="label">06 · מבפנים</p>
+        <h3>מסגרת צרה לעיר</h3>
+        <p>מבפנים, כל חלון הוא פתח קטן בקיר עבה. הוא ממסגר רצועה צרה של נוף, והאור שנכנס דרכו מתון.</p>
+      </div>
+    </div>
+    <div class="light__split light__split--rev">
+      <div class="light__figs">
+        <figure class="light__fig light__fig--wide"><img src="assets/img/letters.jpg" alt="גושי אבן בגן הספרייה, חלק מהעבודה אותיות אור של מיכה אולמן" loading="lazy"></figure>
+      </div>
+      <div class="light__copy">
+        <p class="label">06 · בגן</p>
+        <h3>אותיות אור</h3>
+        <p>ברחבה שמדרום לבניין מוצבת "אותיות אור" של מיכה אולמן: גושי אבן שהצל שלהם בשמש יוצר את 22 אותיות האלף־בית.</p>
+        <p class="light__note">מתחת לפני הקרקע יש חלל, ובתקרתו חתוכות שלוש אותיות ממולאות זכוכית: א עברית, ا ערבית ו־A לטינית.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 SPACES -->
+  <section id="spaces" class="paper spaces" data-chapter="07" data-name="חללים">
+    <div class="spaces__head">
+      <p class="label">07 · חללים</p>
+      <h2 class="big-title" data-split>עוד חללים</h2>
+    </div>
+    <div class="spaces__body">
+      <ol class="spaces__list">
+        <li class="space is-on"><button type="button"><span>01</span><b>מדרגות הכניסה</b><i>מדרגות בטון עולות מהכניסה שברחוב רופין</i></button><figure><img src="assets/img/entrance-stair.jpg" alt="מדרגות בטון רחבות בחלל הכניסה" loading="lazy"></figure></li>
+        <li class="space"><button type="button"><span>02</span><b>חלל בין הקומות</b><i>פתח מעוגל ברצפה, במבט מלמעלה</i></button><figure><img src="assets/img/void-down.jpg" alt="פתח מעוגל בין קומות, ושני אנשים בקומה שמתחת" loading="lazy"></figure></li>
+        <li class="space"><button type="button"><span>03</span><b>אולם התצוגה</b><i>ויטרינות, ותקרה של נקודות אור</i></button><figure><img src="assets/img/exhibition.jpg" alt="אולם תצוגה עם ויטרינות ותקרה מנוקדת באור" loading="lazy"></figure></li>
+        <li class="space"><button type="button"><span>04</span><b>אולם קריאה</b><i>שטיח אדום, שולחנות עץ וקירות זכוכית</i></button><figure><img src="assets/img/red-room.jpg" alt="אולם קריאה עם שטיח אדום ושולחנות עץ" loading="lazy"></figure></li>
+        <li class="space"><button type="button"><span>05</span><b>חדר קריאה מול הגן</b><i>שולחנות ארוכים וחלונות אל העצים</i></button><figure><img src="assets/img/garden-room.jpg" alt="חדר קריאה עם חלונות גדולים אל הגן" loading="lazy"></figure></li>
+        <li class="space"><button type="button"><span>06</span><b>מסדרון החלונות</b><i>מעבר לאורך הקיר שבו נפתחים החלונות</i></button><figure><img src="assets/img/corridor.jpg" alt="מסדרון מקומר לאורך קיר עם פתחים בצורת כוכב" loading="lazy"></figure></li>
+        <li class="space"><button type="button"><span>07</span><b>מסגרות העץ</b><i>קומת הקרקע, במבט מבפנים החוצה</i></button><figure><img src="assets/img/vitrine.jpg" alt="מבט החוצה דרך מסגרות עץ וזכוכית בקומת הקרקע" loading="lazy"></figure></li>
+        <li class="space"><button type="button"><span>08</span><b>הכניסה</b><i>מתחת למסת האבן</i></button><figure><img src="assets/img/canopy.jpg" alt="הכניסה לבניין מתחת למסת האבן הבולטת" loading="lazy"></figure></li>
+      </ol>
+      <div class="spaces__stage" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <!-- 08 NUMBERS + TIMELINE -->
+  <section id="numbers" class="paper numbers" data-chapter="08" data-name="במספרים">
+    <div class="numbers__head">
+      <p class="label">08 · במספרים</p>
+      <h2 class="big-title" data-split>במספרים</h2>
+    </div>
+    <ul class="stats">
+      <li><b><span class="odo" data-count="45000">0</span></b><span>מ״ר שטח בנוי, כשני שלישים ממנו מתחת לאדמה</span></li>
+      <li><b><span class="odo" data-count="250">0</span></b><span>חלונות, ב־19 צורות</span></li>
+      <li><b><span class="odo" data-count="270000">0</span></b><span>אבנים במאגר שמקרר את הבניין</span></li>
+      <li><b lang="en">LEED</b><span>דירוג Platinum לבנייה ירוקה</span></li>
+    </ul>
+    <div class="timeline">
+      <div class="timeline__track">
+        <article class="tl">
+          <figure class="tl__fig"><img src="assets/img/tl-old.jpg" alt="הבניין הישן של הספרייה בקמפוס גבעת רם" loading="lazy"></figure>
+          <div class="tl__txt"><span class="tl__y">2011</span><p>בדצמבר מכריזים על תחרות אדריכלים לבניין חדש. עד אז הספרייה שוכנת בקמפוס גבעת רם, בבניין מ־1960.</p></div>
+        </article>
+        <article class="tl tl--plain">
+          <div class="tl__txt"><span class="tl__y">2013</span><p>באפריל Herzog &amp; de Meuron נבחרים לתכנן את הבניין, יחד עם משרד מאן־שנער.</p></div>
+        </article>
+        <article class="tl">
+          <figure class="tl__fig"><img src="assets/img/tl-render.jpg" alt="הדמיה מוקדמת של הבניין מ־2014" loading="lazy"></figure>
+          <div class="tl__txt"><span class="tl__y">2014</span><p>בנובמבר התכנון מוצג לציבור.</p></div>
+        </article>
+        <article class="tl">
+          <figure class="tl__fig"><img src="assets/img/tl-cornerstone.jpg" alt="טקס הנחת אבן הפינה, אפריל 2016" loading="lazy"></figure>
+          <div class="tl__txt"><span class="tl__y">2016</span><p>ב־5 באפריל מניחים את אבן הפינה.</p></div>
+        </article>
+        <article class="tl">
+          <figure class="tl__fig"><img src="assets/img/tl-2019.jpg" alt="אתר הבנייה ב־2019: מנופים ושלד בטון" loading="lazy"></figure>
+          <div class="tl__txt"><span class="tl__y">2019</span><p>השלד עולה מתוך הבור.</p></div>
+        </article>
+        <article class="tl">
+          <figure class="tl__fig"><img src="assets/img/tl-2021.jpg" alt="עבודות על הגג הקעור ב־2021" loading="lazy"></figure>
+          <div class="tl__txt"><span class="tl__y">2021</span><p>עובדים על הגג. בקיץ נוטעים את הגן, לפני שנת השמיטה.</p></div>
+        </article>
+        <article class="tl">
+          <figure class="tl__fig"><img src="assets/img/tl-2022.jpg" alt="הבניין ב־2022, לקראת סיום העבודות" loading="lazy"></figure>
+          <div class="tl__txt"><span class="tl__y">2022</span><p>חזית האבן גמורה, והעבודות האחרונות בעיצומן.</p></div>
+        </article>
+        <article class="tl tl--last">
+          <figure class="tl__fig"><img src="assets/img/tl-2023.jpg" alt="אולם הקריאה עם קוראים, סתיו 2023" loading="lazy"></figure>
+          <div class="tl__txt"><span class="tl__y">2023</span><p>ב־29 באוקטובר הבניין נפתח לקוראים.</p></div>
+        </article>
+      </div>
+      <div class="timeline__line"><i></i></div>
+    </div>
+  </section>
+
+  <footer class="foot ink">
+    <p class="foot__big">הספרייה הלאומית</p>
+    <div class="foot__grid">
+      <div>
+        <p class="label">אדריכלות</p>
+        <p>Herzog &amp; de Meuron<br>אדריכל מבצע: מאן־שנער<br>קונסטרוקציה: Arup עם J. Kahan &amp; Partners<br>אדריכלות נוף: מילר־בלום</p>
+      </div>
+      <div>
+        <p class="label">צילומים</p>
+        <p>חזקי מוזס, מיכל פריימן, ליזי שאנן, זאב שטיין, <span dir="ltr">Gveret Tered</span><br>באמצעות ויקישיתוף ופיקיוויקי</p>
+      </div>
+      <div>
+        <p class="label">מקורות</p>
+        <p><a href="https://www.herzogdemeuron.com/projects/426-national-library-of-israel/" target="_blank" rel="noopener">Herzog &amp; de Meuron · 426</a><br><a href="https://arquitecturaviva.com/works/biblioteca-nacional-de-israel-jerusalen" target="_blank" rel="noopener">Arquitectura Viva</a><br><a href="https://www.nli.org.il/he" target="_blank" rel="noopener">nli.org.il</a></p>
+      </div>
+      <button class="foot__top" aria-label="חזרה למעלה">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4M5 11l7-7 7 7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+    </div>
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
