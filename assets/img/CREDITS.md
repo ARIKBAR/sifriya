@@ -14,7 +14,7 @@
 | ceiling.jpg | מיכל פריימן | CC BY 2.5 | [103085](https://commons.wikimedia.org/wiki/File:103085_the_new_national_library_PikiWiki_Israel.jpg) |
 | shelves.jpg | מיכל פריימן | CC BY 2.5 | [103081](https://commons.wikimedia.org/wiki/File:103081_the_new_national_library_PikiWiki_Israel.jpg) |
 | hallover.jpg | זאב שטיין | CC BY 2.5 | [103185](https://commons.wikimedia.org/wiki/File:103185_jerusalem_-_the_new_national_library_PikiWiki_Israel.jpg) |
-| spiral-real.jpg | ליזי שאנן | CC BY 2.5 | [104710](https://commons.wikimedia.org/wiki/File:104710_the_national_library_-_jerusalem_PikiWiki_Israel.jpg) |
+| spiral-wide.jpg | מיכל פריימן | CC BY 2.5 | [103088](https://commons.wikimedia.org/wiki/File:103088_the_new_national_library_PikiWiki_Israel.jpg). הצילום המקורי לא שונה, רק הורחב כלפי מטה ב-Magnific (outpainting) כדי שהחלל יהיה במרכז |
 | silhouette.jpg | ליזי שאנן | CC BY 2.5 | [104704](https://commons.wikimedia.org/wiki/File:104704_the_national_library_-_jerusalem_PikiWiki_Israel.jpg) |
 | wellup.jpg | ליזי שאנן | CC BY 2.5 | [104717](https://commons.wikimedia.org/wiki/File:104717_the_national_library_-_jerusalem_PikiWiki_Israel.jpg) |
 | oculus.jpg | ליזי שאנן | CC BY 2.5 | [104718](https://commons.wikimedia.org/wiki/File:104718_the_national_library_-_jerusalem_PikiWiki_Israel.jpg) |

@@ -326,7 +326,7 @@ gsap.from('.well__body', { opacity: 0, y: 24, ease: 'none', scrollTrigger: { tri
 if (!RM) {
   const view = $('.descent__view'), img = $('.descent__img'), dark = $('.descent__dark');
   const rings = $$('.descent__rings circle');
-  const NAT = [1600, 1197], VOID = [0.46, 0.9], POS = [0.5, 1]; // photo size, void centre in the photo, object-position
+  const NAT = [2112, 1968], VOID = [0.495, 0.505], POS = [0.5, 0.5]; // photo size, void centre in the photo, object-position
   const st = { open: 0, dive: 0 };
   let vx = 0, vy = 0, R = 0, r0 = 0;
   const render = () => {
