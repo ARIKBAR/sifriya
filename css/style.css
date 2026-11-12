@@ -174,7 +174,7 @@ section{position:relative}
 .hero__media::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(16,24,36,.62),rgba(16,24,36,.18) 38%,rgba(16,24,36,0) 52%),linear-gradient(to top,rgba(12,11,9,.6),rgba(12,11,9,0) 28%);pointer-events:none}
 .hero > *:not(.hero__media){position:relative;z-index:1}
 .hero__top{display:flex;justify-content:space-between;gap:20px}
-.hero__title{font:300 clamp(64px,9.6vw,190px)/.88 var(--f);letter-spacing:-.03em;display:flex;flex-wrap:wrap;column-gap:.25em;margin-top:2vh;margin-bottom:auto;text-shadow:0 2px 40px rgba(10,20,35,.3)}
+.hero__title{font:300 clamp(64px,9.6vw,190px)/.88 var(--f);letter-spacing:-.03em;display:flex;flex-wrap:wrap;column-gap:.25em;margin-top:clamp(34px,8vh,90px);margin-bottom:auto;text-shadow:0 2px 40px rgba(10,20,35,.3)}
 .hero__line{display:block}
 .hero__bottom{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
 .hero__sub{max-width:24em;font-size:clamp(17px,1.35vw,22px);line-height:1.45}
