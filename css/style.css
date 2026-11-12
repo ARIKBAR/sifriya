@@ -76,7 +76,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .nli{display:block;background:currentColor;-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat}
 .nli--line{width:207px;height:22px;-webkit-mask-image:url(../assets/logo/nli-logo-line.svg);mask-image:url(../assets/logo/nli-logo-line.svg)}
 .nli--mark{display:none;width:30px;height:23px;-webkit-mask-image:url(../assets/logo/nli-mark.svg);mask-image:url(../assets/logo/nli-mark.svg)}
-.nli--full{width:clamp(250px,38vw,600px);aspect-ratio:772.97/192.66;-webkit-mask-image:url(../assets/logo/nli-logo.svg);mask-image:url(../assets/logo/nli-logo.svg)}
 .menu{position:absolute;top:0;left:0;right:0;z-index:-1;padding:86px 28px 28px;border-radius:28px;background:rgba(22,20,15,.86);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line-l);clip-path:inset(0 0 calc(100% - 54px) 0 round 28px);opacity:0;pointer-events:none;transition:clip-path .8s var(--ease-io),opacity .4s}
 .nav.is-open .menu{clip-path:inset(0 0 0 0 round 28px);opacity:1;pointer-events:auto}
 .menu ol{list-style:none;display:grid}
@@ -378,7 +377,9 @@ section{position:relative}
 
 /* ============ footer ============ */
 .foot{padding:16vh 0 34px;overflow:hidden}
-.foot__big{padding:0 var(--gut);font:300 clamp(64px,12vw,220px)/.9 var(--f);letter-spacing:-.03em;border-bottom:1px solid var(--line-l);padding-bottom:6vh}
+/* the signature: the designer's name and a WhatsApp link */
+.foot__sign{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:28px 40px;padding:0 var(--gut) 6vh;border-bottom:1px solid var(--line-l)}
+.foot__name{font:300 clamp(46px,6.6vw,118px)/.9 var(--f);letter-spacing:-.02em}
 .foot__grid{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:4vw;padding:8vh var(--gut) 7vh;align-items:start}
 .foot__grid p:not(.label){margin-top:12px;color:var(--mute-l);font-size:.95em}
 .foot__grid a{border-bottom:1px solid var(--line-l);transition:color .4s,border-color .4s}
@@ -454,7 +455,6 @@ section{position:relative}
   .lit__text{position:relative;margin-top:-9vh;padding:0 var(--gut)}
   .card{grid-template-columns:1fr;gap:34px;padding-top:7vh}
 }
-.foot__big .nli--full{color:var(--paper)}
 
 /* ============ reduced motion ============ */
 @media (prefers-reduced-motion:reduce){
