@@ -2,8 +2,10 @@ import { createScene } from './scene.js';
 import { createDepthPhoto } from './depth.js';
 import { createStoneWall } from './stones.js';
 import { starReveal } from './aperture.js';
+import { initWindows } from './windows.js';
 
 const { gsap, ScrollTrigger, Lenis } = window;
+let windows = null, closeMenu = () => {};
 gsap.registerPlugin(ScrollTrigger);
 
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -125,6 +127,7 @@ ready.then(() => {
     document.body.classList.remove('is-loading');
     lenis && lenis.start();
     ScrollTrigger.refresh();
+    windows && windows.ready();
   });
 });
 
@@ -461,8 +464,12 @@ $('.foot__top').addEventListener('click', () => scrollTo(0, { duration: 2.2 }));
   const toggle = (open) => {
     nav.classList.toggle('is-open', open);
     btn.setAttribute('aria-expanded', open);
-    if (open) gsap.fromTo(links, { yPercent: 100 }, { yPercent: 0, duration: 0.9, ease: 'expo.out', stagger: 0.04, delay: 0.12 });
+    if (open) {
+      windows && windows.closePanel();
+      gsap.fromTo(links, { yPercent: 100 }, { yPercent: 0, duration: 0.9, ease: 'expo.out', stagger: 0.04, delay: 0.12 });
+    }
   };
+  closeMenu = () => toggle(false);
   btn.addEventListener('click', () => toggle(!nav.classList.contains('is-open')));
   addEventListener('keydown', (e) => { if (e.key === 'Escape') toggle(false); });
   $$('[data-scroll]').forEach((a) => a.addEventListener('click', (e) => {
@@ -485,6 +492,11 @@ if (!TOUCH) {
   addEventListener('pointerdown', () => cur.classList.add('is-down'));
   addEventListener('pointerup', () => cur.classList.remove('is-down'));
 }
+
+/* ------------------------------------------------------------ the hidden windows (js/windows.js) */
+try {
+  windows = initWindows({ scene, scrollTo, closeMenu: () => closeMenu() });
+} catch (err) { console.warn('hidden windows off', err); }
 
 // triggers were created section by section, not strictly top to bottom; sort them so
 // everything below the pinned timeline is measured after its pin spacing exists

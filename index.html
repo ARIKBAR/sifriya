@@ -32,16 +32,23 @@
 
 <canvas class="gl" aria-hidden="true"></canvas>
 <div class="hotspots" aria-hidden="true"></div>
+<div class="hw-layer"></div>
 
 <header class="nav">
   <div class="nav__pill">
     <button class="nav__menu" aria-expanded="false" aria-controls="menu">
       <span class="nav__burger"><i></i><i></i></span><span>פרקים</span>
     </button>
-    <a href="#hero" class="nav__logo" data-scroll>הספרייה הלאומית</a>
-    <a href="#monolith" class="nav__cta" data-scroll>
-      <span>סיור במבנה</span><svg viewBox="0 0 24 10" aria-hidden="true"><path d="M23 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor"/></svg>
-    </a>
+    <a href="#hero" class="nav__logo" data-scroll aria-label="הספרייה הלאומית"><span class="nli nli--line" aria-hidden="true"></span><span class="nli nli--mark" aria-hidden="true"></span></a>
+    <div class="nav__end">
+      <button class="wins" type="button" aria-expanded="false" aria-controls="wins-panel">
+        <span class="wins__row" aria-hidden="true"></span>
+        <span class="sr">חלונות שהודלקו: <span class="wins__n">0</span> מתוך <span class="wins__of">7</span></span>
+      </button>
+      <a href="#monolith" class="nav__cta" data-scroll>
+        <span>סיור במבנה</span><svg viewBox="0 0 24 10" aria-hidden="true"><path d="M23 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor"/></svg>
+      </a>
+    </div>
   </div>
   <nav class="menu" id="menu" aria-label="פרקים">
     <ol>
@@ -54,9 +61,29 @@
       <li><a href="#light" data-scroll><span>06</span><b>אור</b></a></li>
       <li><a href="#spaces" data-scroll><span>07</span><b>חללים</b></a></li>
       <li><a href="#numbers" data-scroll><span>08</span><b>במספרים</b></a></li>
+      <li><a href="#lit" data-scroll><span>09</span><b>בערב</b></a></li>
     </ol>
   </nav>
+  <div class="wpanel" id="wins-panel" role="region" aria-label="החלונות">
+    <div class="wpanel__head">
+      <p class="label">החלונות</p>
+      <p class="wpanel__count"><b class="wins__n">0</b> מתוך <span class="wins__of">7</span> דולקים</p>
+    </div>
+    <p class="wpanel__intro">שבעה מהחלונות של הבניין מסתתרים בצילומים ובמודל שלאורך הסיור. חלון נסתר מנצנץ מדי פעם, ולחיצה עליו מדליקה אותו.</p>
+    <ol class="wpanel__list"></ol>
+    <div class="wpanel__foot">
+      <button type="button" class="wpanel__end">לבניין בערב</button>
+      <button type="button" class="wpanel__reset">לכבות את כל החלונות</button>
+    </div>
+  </div>
 </header>
+
+<div class="wtoast" role="status" aria-live="polite" hidden>
+  <i class="wtoast__star" aria-hidden="true"></i>
+  <div class="wtoast__txt"><p class="wtoast__n"></p><p class="wtoast__t"></p><p class="wtoast__more"></p></div>
+  <button type="button" class="wtoast__go" hidden></button>
+  <button type="button" class="wtoast__x" aria-label="סגירה"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 1l10 10M11 1L1 11" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
+</div>
 
 <aside class="chapter-ind" aria-hidden="true">
   <span class="chapter-ind__num">00</span>
@@ -334,8 +361,40 @@
     </div>
   </section>
 
+  <!-- 09 IN THE EVENING: the building, lit by the windows the visitor has found -->
+  <section id="lit" class="ink lit" data-chapter="09" data-name="בערב">
+    <div class="lit__pin">
+      <div class="lit__media">
+        <img class="lit__img" src="assets/img/dusk-facade.jpg" alt="הבניין בשעת דמדומים, ושורת החלונות שבאבן מאירה מבפנים" width="1600" height="1067" loading="lazy">
+        <img class="lit__on" src="assets/img/dusk-facade-windows.jpg" alt="" aria-hidden="true" width="1600" height="1067" loading="lazy">
+        <img class="lit__on lit__on--glow" src="assets/img/dusk-facade-windows.jpg" alt="" aria-hidden="true" width="1600" height="1067" loading="lazy">
+      </div>
+      <div class="lit__text">
+        <p class="label">09 · בערב</p>
+        <h2 class="lit__title">שבעה חלונות</h2>
+        <p class="lit__body">לבניין יש כ־250 חלונות. שבעה מהם מסתתרים בצילומים ובמודל שלאורך הסיור, וכל חלון שמדליקים מאיר כאן חלק מהחזית. כשכל השבעה דולקים, מחכה כאן כרטיס קורא.</p>
+        <p class="lit__count"><span class="lit__stars" aria-hidden="true"></span><span><b class="wins__n">0</b> מתוך <span class="wins__of">7</span> דולקים</span></p>
+        <button type="button" class="btn btn--light lit__open"><span>לרשימת החלונות</span><svg viewBox="0 0 24 10" aria-hidden="true"><path d="M23 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor"/></svg></button>
+      </div>
+    </div>
+    <div class="card" hidden>
+      <div class="card__view"><canvas class="card__cv" width="1200" height="756" role="img" aria-label="כרטיס קורא"></canvas></div>
+      <form class="card__form" autocomplete="off">
+        <h3 class="card__title">הכרטיס שלכם</h3>
+        <p class="card__lead">כתבו את השם שיופיע על הכרטיס. זו מזכרת מהסיור, לא כרטיס של הספרייה.</p>
+        <label class="card__label" for="card-name">שם</label>
+        <input class="card__input" id="card-name" name="name" maxlength="26" placeholder="השם שלכם" spellcheck="false">
+        <div class="card__btns">
+          <button type="submit" class="btn btn--light card__dl"><span>להורדת הכרטיס</span><svg viewBox="0 0 24 10" aria-hidden="true"><path d="M23 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor"/></svg></button>
+          <button type="button" class="btn btn--light card__share" hidden><span>לשיתוף</span></button>
+        </div>
+        <p class="card__note">הכרטיס נוצר בדפדפן, והשם לא נשלח לשום מקום.</p>
+      </form>
+    </div>
+  </section>
+
   <footer class="foot ink">
-    <p class="foot__big">הספרייה הלאומית</p>
+    <p class="foot__big"><span class="nli nli--full" role="img" aria-label="הספרייה הלאומית"></span></p>
     <div class="foot__grid">
       <div>
         <p class="label">אדריכלות</p>

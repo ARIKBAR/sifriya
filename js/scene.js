@@ -846,6 +846,7 @@ export function createScene(canvas) {
     hotLayer.appendChild(el); hotEls.push(el);
   });
 
+  const anchors = [];
   let active = false, last = performance.now(), time = 0;
   const v3 = new THREE.Vector3(), right = new THREE.Vector3(), up = new THREE.Vector3(), fwd = new THREE.Vector3();
   const BOX = Q.flatMap((q) => [new THREE.Vector3(q.p[0], 0, q.p[1]), new THREE.Vector3(q.p[0], q.h, q.p[1])]);
@@ -926,6 +927,20 @@ export function createScene(canvas) {
       v3.copy(HOTS[i].p).project(camera);
       el.style.transform = `translate(${(v3.x * 0.5 + 0.5) * innerWidth - 6}px, ${(-v3.y * 0.5 + 0.5) * innerHeight - 6}px)`;
     });
+    // elements pinned to a window of the model, shown only while that facade faces the camera
+    for (const a of anchors) {
+      const vis = shell > 0.9 && cur.under < 0.1 && v3.copy(camera.position).sub(a.p).dot(a.n) > 0;
+      if (vis) {
+        v3.copy(a.p).project(camera);
+        a.x = (v3.x * 0.5 + 0.5) * innerWidth; a.y = (-v3.y * 0.5 + 0.5) * innerHeight;
+        a.el.style.transform = `translate3d(${a.x.toFixed(1)}px,${a.y.toFixed(1)}px,0)`;
+        // the window's size on screen: a model window is about 0.06 units wide
+        v3.copy(a.p).addScaledVector(right, a.r).project(camera);
+        a.el.style.setProperty('--rx', `${Math.max(2, Math.abs((v3.x * 0.5 + 0.5) * innerWidth - a.x)).toFixed(1)}px`);
+        a.el.style.setProperty('--ry', `${Math.max(2, Math.abs((v3.x * 0.5 + 0.5) * innerWidth - a.x) * 1.1).toFixed(1)}px`);
+      }
+      if (vis !== a.vis) { a.vis = vis; a.el.classList.toggle('is-away', !vis); }
+    }
 
     composer.render();
   }
@@ -952,10 +967,20 @@ export function createScene(canvas) {
     set(track, p) { target = sample(TRACKS[track], clamp01(p)); },
     jump() { cur.cam.copy(target.cam); cur.look.copy(target.look); for (const key of ['shell', 'wire', 'night', 'under']) cur[key] = target[key]; },
     setHot(i) { hotIdx = i; if (i < 0) hotEls.forEach((el) => el.classList.remove('is-on')); },
+    // pin an element to point p on the facade with outward normal n; returns its live screen position
+    anchor(el, p, n, r = 0.032) {
+      const a = { el, p: new THREE.Vector3(...p), n: new THREE.Vector3(...n), r, vis: false, x: -1e4, y: -1e4 };
+      el.classList.add('is-away');
+      anchors.push(a);
+      return a;
+    },
     setActive(v) {
       active = v;
       if (v) last = performance.now();
-      else hotEls.forEach((el) => el.classList.remove('is-on'));
+      else {
+        hotEls.forEach((el) => el.classList.remove('is-on'));
+        anchors.forEach((a) => { a.vis = false; a.el.classList.add('is-away'); });
+      }
     },
   };
 }
