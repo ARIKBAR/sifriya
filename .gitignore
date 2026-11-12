@@ -3,3 +3,5 @@ __pycache__/
 .DS_Store
 Thumbs.db
 _preview/
+tools/out/
+tools/tex/

@@ -1,4 +1,5 @@
 import { createSequence } from './seq.js';
+import { createBuild } from './build.js';
 import { createDepthPhoto } from './depth.js';
 import { createStoneWall } from './stones.js';
 import { starReveal } from './aperture.js';
@@ -143,6 +144,17 @@ gsap.to('.hero__title, .hero__bottom, .hero__top', { yPercent: -18, opacity: 0, 
 /* ------------------------------------------------------------ tour ↔ scroll */
 ScrollTrigger.create({ trigger: '#monolith', start: 'top top', end: 'bottom bottom', onUpdate: (s) => tour.set(s.progress) });
 ScrollTrigger.create({ trigger: '#monolith', start: 'top 300%', once: true, onEnter: () => tour.preload() });
+
+/* ------------------------------------------------------------ how it is made: the model assembles itself */
+{
+  let build = null;
+  try { build = createBuild($('.build__gl')); } catch (err) { console.warn('model off', err); }
+  const steps = $$('.build__steps li'), AT = [0, 0.18, 0.36, 0.52, 0.68, 0.84];
+  const mark = (p) => { let k = 0; AT.forEach((v, i) => { if (p >= v) k = i; }); steps.forEach((li, i) => li.classList.toggle('is-on', i === k)); };
+  mark(0);
+  ScrollTrigger.create({ trigger: '#build', start: 'top top', end: 'bottom bottom', onUpdate: (s) => { build && build.set(s.progress); mark(s.progress); } });
+  ScrollTrigger.create({ trigger: '#build', start: 'top bottom', end: 'bottom top', onToggle: (s) => build && build.setActive(s.isActive) });
+}
 
 /* ------------------------------------------------------------ site */
 {
