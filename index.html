@@ -30,6 +30,8 @@
   </div>
 </div>
 
+<canvas class="gl" aria-hidden="true"></canvas>
+<div class="hotspots" aria-hidden="true"></div>
 
 <header class="nav">
   <div class="nav__pill">
@@ -93,8 +95,8 @@
         <a href="#monolith" class="btn" data-scroll><span>לסיור בתלת־ממד</span><svg viewBox="0 0 24 10" aria-hidden="true"><path d="M23 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor"/></svg></a>
       </div>
       <div class="site__media">
-        <figure class="site__fig site__fig--a"><img src="assets/img/curve.jpg" alt="החזית הארוכה של הבניין מתעקלת ועולה אל הקצה הדרומי הגבוה" loading="lazy"></figure>
-        <figure class="site__fig site__fig--b"><img src="assets/img/end.jpg" alt="הקצה הצפוני של הבניין: מסת אבן מעל קומת קרקע מזכוכית" loading="lazy"><figcaption class="credit">מיכל פריימן · CC BY 2.5</figcaption></figure>
+        <figure class="site__fig site__fig--a"><img src="assets/img/curve.jpg" alt="החזית הארוכה של הבניין מתעקלת ועולה אל הקצה הצפוני הגבוה" loading="lazy"></figure>
+        <figure class="site__fig site__fig--b"><img src="assets/img/end.jpg" alt="הקצה הדרומי של הבניין: מסת אבן מעל קומת קרקע מזכוכית" loading="lazy"><figcaption class="credit">מיכל פריימן · CC BY 2.5</figcaption></figure>
       </div>
     </div>
   </section>
@@ -102,7 +104,6 @@
   <!-- 02 THE BUILDING (3D) -->
   <section id="monolith" class="s3d monolith" data-chapter="02" data-name="המבנה">
     <div class="stage">
-      <canvas class="seq" aria-label="תנועת מצלמה סביב הבניין"></canvas>
       <div class="stage__chapters">
         <article class="chap" data-i="0">
           <p class="label">02.1 · בסיס</p>
@@ -112,7 +113,7 @@
         <article class="chap" data-i="1">
           <p class="label">02.2 · מסה</p>
           <h2 class="chap__title">נפח אחד</h2>
-          <p class="chap__body">בתוכנית הנפח קרוב למשולש, כמו המגרש. שלוש מהחזיתות מתעקלות בעדינות, והחזית הדרומית ישרה. היא גם החלק הגבוה ביותר, עד מגבלת הגובה של האתר.</p>
+          <p class="chap__body">בתוכנית הנפח קרוב למשולש, כמו המגרש. שלוש מהחזיתות מתעקלות בעדינות, והחזית הצפונית ישרה. היא גם החלק הגבוה ביותר, עד מגבלת הגובה של האתר.</p>
         </article>
         <article class="chap" data-i="2">
           <p class="label">02.3 · גג</p>
@@ -129,26 +130,7 @@
         <span class="stage__count"><b>01</b> / 04</span>
         <span class="stage__bar"><i></i></span>
       </div>
-    </div>
-  </section>
-
-  <!-- 02.5 HOW IT IS MADE: the Blender model assembles itself -->
-  <section id="build" class="build" data-chapter="02" data-name="המבנה">
-    <div class="build__pin">
-      <canvas class="build__gl" aria-label="מודל תלת־ממדי של הבניין שמתרכב בגלילה"></canvas>
-      <div class="build__text">
-        <p class="label">02.5 · מבנה</p>
-        <h2 class="build__title">איך הבניין בנוי</h2>
-        <ol class="build__steps">
-          <li><b>קומות הזכוכית</b><span>שתי קומות של תיבות זכוכית במסגרות עץ, על עמודים.</span></li>
-          <li><b>מסת האבן</b><span>נפח אחד, מונח מעל הזכוכית ובולט ממנה בשני הקצוות.</span></li>
-          <li><b>הגג הקעור</b><span>שוקע בין הקצה הדרומי הגבוה לקצה הצפוני.</span></li>
-          <li><b>הצוהר</b><span>זכוכית עגולה, ומסביבה טבעת של 621 לוחות סולאריים.</span></li>
-          <li><b>החלונות</b><span>פתחים בצורת כוכב, ברצועה לאורך החזית.</span></li>
-          <li><b>ערב</b><span>האור בפנים נדלק, והחלונות מאירים.</span></li>
-        </ol>
-        <p class="build__note">מודל משוער, לפי התוכניות והחתכים של האדריכלים</p>
-      </div>
+      <p class="stage__note">מודל משוער, לפי התוכניות והחתכים של האדריכלים. הסביבה לפי מפת OpenStreetMap</p>
     </div>
   </section>
 
@@ -365,7 +347,7 @@
       </div>
       <div>
         <p class="label">מקורות</p>
-        <p><a href="https://www.herzogdemeuron.com/projects/426-national-library-of-israel/" target="_blank" rel="noopener">Herzog &amp; de Meuron · 426</a><br><a href="https://arquitecturaviva.com/works/biblioteca-nacional-de-israel-jerusalen" target="_blank" rel="noopener">Arquitectura Viva</a><br><a href="https://www.nli.org.il/he" target="_blank" rel="noopener">nli.org.il</a></p>
+        <p><a href="https://www.herzogdemeuron.com/projects/426-national-library-of-israel/" target="_blank" rel="noopener">Herzog &amp; de Meuron · 426</a><br><a href="https://arquitecturaviva.com/works/biblioteca-nacional-de-israel-jerusalen" target="_blank" rel="noopener">Arquitectura Viva</a><br><a href="https://www.nli.org.il/he" target="_blank" rel="noopener">nli.org.il</a><br><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></p>
       </div>
       <button class="foot__top" aria-label="חזרה למעלה">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4M5 11l7-7 7 7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>

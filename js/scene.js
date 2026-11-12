@@ -4,6 +4,8 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { Pass, FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -18,22 +20,24 @@ const rr = (a, b) => a + (b - a) * rnd();
 
 /* ==========================================================================
    MASSING — traced from Herzog & de Meuron's published plans and sections
-   (level-2 plan and the long section), checked against aerial photographs.
-   1 unit ≈ 8.8 m. +z faces the street, the long west facade.
+   (level-2 plan and the long section), checked against aerial photographs
+   and fitted to the real footprint on the map: 1 unit ≈ 8.9 m, and north
+   points to (x, z) ≈ (-0.75, -0.66).
    Plan: close to a triangle, on a triangular plot. Four facades with sharp
-   corners: the long street side (A→B), the short north end (B→C), the long
-   back (C→D) and the straight south facade (D→A), which is the highest part.
+   corners: the long side on Ruppin (A→B, +z, faces south-west), the short
+   southern tip (B→C), the long back on Kaplan (C→D) and the straight north
+   facade (D→A), which is the highest part.
    Three facades curve gently inward in plan. The roof is concave: it dips
-   between the raised south end and the slightly raised north tip.
+   between the raised north end and the slightly raised southern tip.
    ========================================================================== */
 const Q = [
-  { p: [-8.5, 2.4], h: 3.45, r: 0.12 },  // A  street side, south end
-  { p: [6.3, 2.8], h: 2.45, r: 0.16 },   // B  street side, north end
-  { p: [8.8, 0.0], h: 2.75, r: 0.1 },    // C  the north tip
-  { p: [-3.7, -4.5], h: 3.95, r: 0.06 }, // D  the peak (south end, at the back)
+  { p: [-8.5, 2.4], h: 3.45, r: 0.12 },  // A  Ruppin side, north end
+  { p: [6.3, 2.8], h: 2.45, r: 0.16 },   // B  Ruppin side, south end
+  { p: [8.8, 0.0], h: 2.75, r: 0.1 },    // C  the southern tip
+  { p: [-3.7, -4.5], h: 3.95, r: 0.06 }, // D  the peak (north end, at the back)
 ];
 const SAG = [0.75, 0.05, 0.85, 0.1];     // sag of each roof edge   A→B, B→C, C→D, D→A
-const BOW = [0.32, 0.06, 0.55, 0];       // inward curve of each facade in plan (the south one is straight)
+const BOW = [0.32, 0.06, 0.55, 0];       // inward curve of each facade in plan (the north one is straight)
 const GH = 1.05;                          // the two glazed ground floors under the stone mass
 const OCULUS = { x: -1.3, z: -0.25, r: 2.25, glass: 1.4 }; // skylight inside a ring of PV modules
 const SKY_LIGHT = { x: 5.5, z: 0.75, r: 0.26 };
@@ -236,17 +240,6 @@ function glassCanvas(W = 1024, H = 128) {
   return { cv, em };
 }
 
-function groundCanvas(S = 2048) {
-  const cv = document.createElement('canvas'); cv.width = cv.height = S;
-  const c = cv.getContext('2d');
-  c.fillStyle = '#d6cfc1'; c.fillRect(0, 0, S, S);
-  for (let i = 0; i < 9000; i++) {
-    c.fillStyle = `rgba(${rnd() < 0.5 ? '118,106,86' : '246,240,228'},${rr(0.03, 0.1)})`;
-    c.fillRect(rr(0, S), rr(0, S), rr(1, 5), rr(1, 5));
-  }
-  return cv;
-}
-
 function tex(cv, srgb = true, wrap = THREE.RepeatWrapping) {
   const t = new THREE.CanvasTexture(cv);
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
@@ -278,6 +271,73 @@ for (const tr of Object.values(TRACKS)) {
   tr.lookCurve = new THREE.CatmullRomCurve3(tr.map((k) => k.look), false, 'centripetal');
 }
 
+// the base the building stands on: a round piece of the city (see the SITE block below)
+const SITE = { x: 3, z: -4, r: 30, street: -0.06, plinth: 1.1 };
+const FOG = [26, 150];
+const DOF = { aperture: 0.00044, maxblur: 0.0026 };   // blur radius per unit of distance, and its limit (fractions of the frame width)
+
+// The scene is drawn into its own multisampled buffer and copied from there into the composer,
+// so only this one pass pays for anti-aliasing and every later pass works on plain buffers.
+class SceneMsaaPass extends Pass {
+  constructor(scene, camera, samples) {
+    super();
+    this.scene = scene; this.camera = camera; this.needsSwap = false;
+    this.target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples });
+    this.quad = new FullScreenQuad(new THREE.ShaderMaterial({
+      uniforms: { tDiffuse: { value: this.target.texture } }, depthTest: false, depthWrite: false,
+      vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }',
+      fragmentShader: 'uniform sampler2D tDiffuse; varying vec2 vUv; void main(){ gl_FragColor = texture2D( tDiffuse, vUv ); }',
+    }));
+  }
+  setSize(w, h) { this.target.setSize(w, h); }
+  render(renderer, writeBuffer, readBuffer) {
+    renderer.setRenderTarget(this.target);
+    renderer.render(this.scene, this.camera);
+    renderer.setRenderTarget(this.renderToScreen ? null : readBuffer);
+    this.quad.render(renderer);
+  }
+  dispose() { this.target.dispose(); this.quad.dispose(); }
+}
+
+// Depth of field in one pass. It reads the depth the occlusion pass has already drawn, leaves
+// the sharp zone untouched and spends its samples only where the picture is out of focus.
+const DofShader = {
+  uniforms: {
+    tDiffuse: { value: null }, tDepth: { value: null }, focus: { value: 12 }, range: { value: 5 },
+    aperture: { value: 0 }, maxblur: { value: DOF.maxblur }, near: { value: 0.05 }, far: { value: 500 }, aspect: { value: 1 },
+    texel: { value: new THREE.Vector2(0.001, 0.001) },
+  },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }',
+  fragmentShader: `
+    #include <common>
+    #include <packing>
+    uniform sampler2D tDiffuse; uniform sampler2D tDepth;
+    uniform float focus; uniform float range; uniform float aperture; uniform float maxblur; uniform float near; uniform float far; uniform float aspect;
+    uniform vec2 texel;
+    varying vec2 vUv;
+    const int TAPS = 14;
+    // how far outside the sharp zone the surface at uv lies (viewZ is negative in front of the camera)
+    float away( vec2 uv ) { return max( 0.0, abs( focus + perspectiveDepthToViewZ( texture2D( tDepth, uv ).x, near, far ) ) - range ); }
+    void main() {
+      // the depth is coarser than the picture, so take the sharpest of the neighbours: an outline of
+      // something in focus must never be smeared, a thin rim of sharp background behind it does no harm
+      float d = min( away( vUv ), min( min( away( vUv + texel ), away( vUv - texel ) ), min( away( vUv + vec2( texel.x, -texel.y ) ), away( vUv + vec2( -texel.x, texel.y ) ) ) ) );
+      float r = min( d * aperture, maxblur );
+      vec4 c = texture2D( tDiffuse, vUv );
+      if ( r > 0.0003 ) {
+        // a spiral of samples, turned by a different angle at every pixel so that no pattern shows
+        float turn = 6.2831853 * fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
+        for ( int i = 1; i < TAPS; i ++ ) {
+          float t = float( i );
+          float a = t * 2.39996323 + turn;
+          c += texture2D( tDiffuse, vUv + vec2( cos( a ), sin( a ) * aspect ) * ( r * sqrt( t / float( TAPS ) ) ) );
+        }
+        c /= float( TAPS );
+      }
+      gl_FragColor = c;
+    }`,
+};
+
 function sample(track, p) {
   const n = track.length - 1;
   let i = 0;
@@ -296,13 +356,15 @@ function sample(track, p) {
 /* ========================================================================== */
 export function createScene(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  const DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+  let DPR = Math.min(window.devicePixelRatio || 1, 1.5);
   renderer.setPixelRatio(DPR);
   renderer.setSize(innerWidth, innerHeight, false);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false;       // nothing that casts a shadow ever moves
+  renderer.shadowMap.needsUpdate = true;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, innerWidth / innerHeight, 0.05, 500);
@@ -320,19 +382,28 @@ export function createScene(canvas) {
       fragmentShader: 'uniform vec3 top; uniform vec3 mid; uniform vec3 bot; varying vec3 vP; void main(){ float h = vP.y; vec3 c = h>0. ? mix(mid, top, pow(clamp(h*1.6,0.,1.),.7)) : mix(mid, bot, clamp(-h*5.,0.,1.)); gl_FragColor = vec4(c,1.); }',
     })
   ));
-  scene.fog = new THREE.Fog(0xd5dbe0, 40, 160);
+  scene.fog = new THREE.Fog(0xe9e7e2, FOG[0], FOG[1]);
 
-  // ---------- light: a high Jerusalem sun from the south-west
+  // ---------- light: an afternoon sun from the west, over the whole base
+  const small = Math.min(innerWidth, innerHeight) < 700;
   const hemi = new THREE.HemisphereLight(0xdfe8f3, 0x8c7f69, 1.0);
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xfff1dc, 3.0);
-  sun.position.set(-12, 18, 12);
+  sun.target.position.set(SITE.x, 0, SITE.z);
+  sun.position.copy(sun.target.position).addScaledVector(new THREE.Vector3(-12, 18, 12).normalize(), 60);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16, near: 1, far: 70 });
-  sun.shadow.bias = -0.0004;
-  sun.shadow.normalBias = 0.03;
-  scene.add(sun);
+  sun.shadow.mapSize.set(small ? 2048 : 4096, small ? 2048 : 4096);
+  Object.assign(sun.shadow.camera, { left: -SITE.r - 1, right: SITE.r + 1, top: SITE.r + 1, bottom: -SITE.r - 1, near: 20, far: 110 });
+  sun.shadow.bias = -0.0005;
+  sun.shadow.normalBias = 0.035;
+  scene.add(sun, sun.target);
+  // evening: warm light from the glazed floors falls on the ground around the building
+  const lamps = [[-3.6, -0.6], [1.6, 0.3], [5.6, 0.7]].map(([x, z]) => {
+    const l = new THREE.PointLight(0xffc48a, 0, 12, 1.7);
+    l.position.set(x, 0.6, z);
+    scene.add(l);
+    return l;
+  });
 
   // ---------- building
   const { pts, c, P } = outline(360);
@@ -347,14 +418,13 @@ export function createScene(canvas) {
   const bandAt = (u) => {
     const i = Math.min(N - 1, Math.floor(u * N));
     const p = pts[i];
-    if (p.y > 1.9 && p.x > -2.2) return true;       // street side, the northern half
-    if (p.x > 6.2) return true;                      // the north end
-    if (p.y < 0 && p.x > 3.2) return true;           // the back, near the north tip
+    if (p.y > 1.9 && p.x > -2.2) return true;       // Ruppin side, the southern half
+    if (p.x > 6.2) return true;                      // the southern tip
+    if (p.y < 0 && p.x > 3.2) return true;           // the back, near the tip
     return false;
   };
   const maxTex = renderer.capabilities.maxTextureSize;
-  const small = Math.min(innerWidth, innerHeight) < 700;
-  const ppu = Math.min(small ? 100 : 180, Math.floor(Math.min(maxTex, 8192) / P));
+  const ppu =Math.min(small ? 100 : 180, Math.floor(Math.min(maxTex, 8192) / P));
   const TEXH = 3.0;
   const fac = facadeCanvases(P, ppu, TEXH, bandAt);
   const clampT = (cv, s) => tex(cv, s, THREE.ClampToEdgeWrapping);
@@ -377,7 +447,7 @@ export function createScene(canvas) {
     }
     for (let i = 0; i < N; i++) for (let j = 0; j < M; j++) {
       const a = i * (M + 1) + j, b = (i + 1) * (M + 1) + j;
-      idx.push(a, a + 1, b, b, a + 1, b + 1);
+      idx.push(a, b, a + 1, a + 1, b, b + 1);       // facing outward: the depth and occlusion passes draw front faces only
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -406,7 +476,7 @@ export function createScene(canvas) {
     }
     for (let i = 0; i < N; i++) for (let j = 0; j < S; j++) {
       const a = i * (S + 1) + j, b = (i + 1) * (S + 1) + j;
-      idx.push(a, b, a + 1, a + 1, b, b + 1);
+      idx.push(a, a + 1, b, b, a + 1, b + 1);       // facing up
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -451,7 +521,7 @@ export function createScene(canvas) {
       pos.push(p.x, 0, p.y, p.x, GH, p.y);
       uv.push(L / 6, 0, L / 6, 1);
     }
-    for (let i = 0; i < inner.length; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 2, a + 1, a + 3); }
+    for (let i = 0; i < inner.length; i++) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
@@ -514,59 +584,232 @@ export function createScene(canvas) {
     building.add(new THREE.LineSegments(g, lineMat));
   }
 
-  // ---------- site, kept abstract like an architect's model: pale ground, the street, pale trees
-  const groundTex = tex(groundCanvas());
-  groundTex.repeat.set(60, 60);
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(300, 72), new THREE.MeshStandardMaterial({ map: groundTex, roughness: 0.96 }));
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+  /* ==========================================================================
+     SITE — a round piece of the real city around the building, made the way a
+     card model is made: the streets one layer down, the plots, a thinner card
+     for planted ground, plain blocks for the neighbours. The plan comes from
+     OpenStreetMap, fitted to the model (tools/site_data.py); the soft shading
+     on it is baked, once for the base and once for the library itself, so the
+     library's own shadow can arrive together with the building.
+     ========================================================================== */
   const site = new THREE.Group();
   scene.add(site);
+  const siteU = {
+    tAo: { value: null }, tLib: { value: null }, uLib: { value: new THREE.Vector4(0, 0, 1, 1) },
+    uAo: { value: 0.9 }, uLibAo: { value: 0 },
+  };
+  const floorMat = new THREE.MeshBasicMaterial({ color: 0xe3e0d9 });
   {
-    const road = new THREE.Mesh(new THREE.PlaneGeometry(240, 2.2), new THREE.MeshStandardMaterial({ color: 0xbab2a3, roughness: 0.95 }));
-    road.rotation.x = -Math.PI / 2; road.rotation.z = -0.03; road.position.set(0, 0.005, 6.4);
-    road.receiveShadow = true;
-    site.add(road);
-    const nT = 120;
-    const cyp = new THREE.InstancedMesh(new THREE.SphereGeometry(0.22, 10, 8), new THREE.MeshStandardMaterial({ color: 0xcdc6b7, roughness: 1 }), nT);
-    const pine = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.5, 2), new THREE.MeshStandardMaterial({ color: 0xd3ccbd, roughness: 1 }), nT);
-    cyp.castShadow = pine.castShadow = true;
-    const m = new THREE.Matrix4(), q = new THREE.Quaternion();
-    let ic = 0, ip = 0, guard = 0;
-    const inside = (x, z) => x > -9.9 && x < 10.1 && z > -5.7 && z < 4.0;
-    while ((ic < nT || ip < nT) && guard++ < 8000) {
-      const x = rr(-34, 34), z = rr(-28, 3);
-      if (inside(x, z)) continue;
-      if (x > 9.8 && z > -7) continue;               // keep the view of the north end clear
-      q.setFromEuler(new THREE.Euler(0, rr(0, 6.28), 0));
-      if (rnd() < 0.5 && ic < nT) {
-        const h = rr(0.8, 1.5);
-        m.compose(new THREE.Vector3(x, h * 0.22 * 2.8, z), q, new THREE.Vector3(0.75, h * 2.8, 0.75)); cyp.setMatrixAt(ic++, m);
-      } else if (ip < nT) {
-        const k = rr(0.5, 1.0);
-        m.compose(new THREE.Vector3(x, 0.55 * k + 0.35, z), q, new THREE.Vector3(k * 1.15, k * 0.75, k * 1.15)); pine.setMatrixAt(ip++, m);
-      }
+    // the studio floor the base stands on, with the soft shadow of the base on it
+    const y0 = SITE.street - SITE.plinth;
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(600, 96), floorMat);
+    floor.rotation.x = -Math.PI / 2; floor.position.set(SITE.x, y0, SITE.z);
+    site.add(floor);
+    const cv = document.createElement('canvas'); cv.width = cv.height = 512;
+    const c = cv.getContext('2d'), g = c.createRadialGradient(256, 256, 256 * 0.5, 256, 256, 256);
+    g.addColorStop(0, 'rgba(52,47,40,.6)'); g.addColorStop(0.16, 'rgba(52,47,40,.42)'); g.addColorStop(0.45, 'rgba(52,47,40,.14)'); g.addColorStop(1, 'rgba(52,47,40,0)');
+    c.fillStyle = g; c.fillRect(0, 0, 512, 512);
+    const shadow = new THREE.Mesh(new THREE.CircleGeometry(SITE.r * 1.9, 96), new THREE.MeshBasicMaterial({ map: tex(cv, true, THREE.ClampToEdgeWrapping), transparent: true, depthWrite: false }));
+    shadow.rotation.x = -Math.PI / 2; shadow.position.set(SITE.x, y0 + 0.01, SITE.z);
+    site.add(shadow);
+    // the base itself: a thick disc of stacked boards
+    const lc = document.createElement('canvas'); lc.width = 4; lc.height = 256;
+    const l = lc.getContext('2d'), nL = 9;
+    for (let i = 0; i < nL; i++) {
+      l.fillStyle = i % 2 ? '#d7d1c5' : '#cec8bb'; l.fillRect(0, (i * 256) / nL, 4, 256 / nL + 1);
+      l.fillStyle = 'rgba(96,88,74,.4)'; l.fillRect(0, (i * 256) / nL, 4, 1.4);
     }
-    cyp.count = ic; pine.count = ip;
-    site.add(cyp, pine);
+    const side = new THREE.Mesh(new THREE.CylinderGeometry(SITE.r, SITE.r, SITE.plinth, 256, 1, true), new THREE.MeshStandardMaterial({ map: tex(lc, true, THREE.ClampToEdgeWrapping), roughness: 0.95 }));
+    side.position.set(SITE.x, SITE.street - SITE.plinth / 2, SITE.z);
+    side.receiveShadow = true;
+    site.add(side);
   }
+  // fine paper grain, so the cards keep a surface when the camera is close to them
+  const grain = (() => {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+    const c = cv.getContext('2d'), im = c.createImageData(256, 256);
+    for (let i = 0; i < im.data.length; i += 4) { const v = 128 + (rnd() - 0.5) * 150; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
+    c.putImageData(im, 0, 0);
+    const t = tex(cv, false);
+    t.repeat.set(170, 170);
+    return t;
+  })();
+  // planted ground: a fine, even scatter of dots, as on a landscape plan. It tiles, so it stays
+  // crisp next to the camera, where the drawn plan itself is stretched thin.
+  const DOT_TILE = 6;
+  const dots = (() => {
+    const S = 1024, cv = document.createElement('canvas'); cv.width = cv.height = S;
+    const c = cv.getContext('2d'), k = S / DOT_TILE, n = Math.round(S / (0.15 * k));
+    c.fillStyle = '#000'; c.fillRect(0, 0, S, S);
+    c.fillStyle = '#fff';
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      const x = (i + 0.5 + rr(-0.4, 0.4)) * (S / n), y = (j + 0.5 + rr(-0.4, 0.4)) * (S / n), r = rr(0.024, 0.044) * k;
+      for (const ox of [-S, 0, S]) for (const oy of [-S, 0, S]) { c.beginPath(); c.arc(x + ox, y + oy, r, 0, Math.PI * 2); c.fill(); }
+    }
+    const t = tex(cv, false);
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return t;
+  })();
+  const smallTex = small || maxTex < 4096;
+  const loadTex = (url, srgb) => new Promise((res, rej) => new THREE.TextureLoader().load(url, (t) => {
+    t.flipY = false;                     // the images are drawn x to the right, z downward
+    if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    res(t);
+  }, undefined, rej));
+  Promise.all([
+    fetch('assets/site/site.json').then((r) => r.json()),
+    loadTex(`assets/site/plan${smallTex ? '-2k' : ''}.jpg`, true),
+    loadTex('assets/site/ao.jpg', false),
+    loadTex('assets/site/ao-lib.jpg', false),
+  ]).then(([d, plan, ao, aoLib]) => {
+    const q = d.q, T = d.tex, lv = d.levels;
+    const acc = () => ({ pos: [], nor: [], uv: [], col: [], idx: [] });
+    const put = (A, x, y, z, nx, ny, nz, c) => { A.pos.push(x, y, z); A.nor.push(nx, ny, nz); A.uv.push((x - T.x0) / T.size, (z - T.z0) / T.size); A.col.push(c, c, c); };
+    const addTop = (A, L, y, c = 1) => {
+      const o = A.pos.length / 3;
+      for (let k = 0; k < L.v.length; k += 2) put(A, L.v[k] / q, y, L.v[k + 1] / q, 0, 1, 0, c);
+      for (const i of L.i) A.idx.push(o + i);
+    };
+    // vertical faces along every ring; the inside of a ring is on its left, so its right is outside
+    const addWalls = (A, L, ys, cs) => {
+      for (const ring of L.r) for (let k = 0; k < ring.length; k++) {
+        const a = ring[k] * 2, b = ring[(k + 1) % ring.length] * 2;
+        const ax = L.v[a] / q, az = L.v[a + 1] / q, bx = L.v[b] / q, bz = L.v[b + 1] / q;
+        const len = Math.hypot(bx - ax, bz - az) || 1, nx = (bz - az) / len, nz = -(bx - ax) / len;
+        const o = A.pos.length / 3;
+        ys.forEach((y, j) => { put(A, ax, y, az, nx, 0, nz, cs[j]); put(A, bx, y, bz, nx, 0, nz, cs[j]); });
+        for (let j = 0; j < ys.length - 1; j++) { const p = o + j * 2; A.idx.push(p, p + 2, p + 1, p + 1, p + 2, p + 3); }
+      }
+    };
+    const geo = (A, col) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(A.pos, 3));
+      g.setAttribute('normal', new THREE.Float32BufferAttribute(A.nor, 3));
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(A.uv, 2));
+      if (col) g.setAttribute('color', new THREE.Float32BufferAttribute(A.col, 3));
+      g.setIndex(A.idx);
+      return g;
+    };
+
+    // the three levels of the ground share the drawn plan and the baked shading
+    siteU.tAo.value = ao; siteU.tLib.value = aoLib;
+    siteU.uLib.value.set((T.lib[0] - T.x0) / T.size, (T.lib[1] - T.z0) / T.size, T.lib[2] / T.size, T.lib[3] / T.size);
+    const dotTint = new THREE.Color(d.pal.dot).convertSRGBToLinear();
+    const greenLin = new THREE.Color(d.pal.green).convertSRGBToLinear();
+    dotTint.setRGB(dotTint.r / greenLin.r, dotTint.g / greenLin.g, dotTint.b / greenLin.b);
+    const groundMat = (planted) => {
+      const m = new THREE.MeshStandardMaterial({ map: plan, roughness: 0.96, metalness: 0, envMapIntensity: 0.2, bumpMap: grain, bumpScale: 0.35 });
+      const own = { tDots: { value: dots }, uDots: { value: planted ? 1 : 0 }, uDotRep: { value: T.size / DOT_TILE }, uDotTint: { value: dotTint } };
+      m.onBeforeCompile = (sh) => {
+        Object.assign(sh.uniforms, siteU, own);
+        sh.fragmentShader = sh.fragmentShader
+          .replace('#include <common>', `#include <common>
+            uniform sampler2D tAo; uniform sampler2D tLib; uniform vec4 uLib; uniform float uAo; uniform float uLibAo;
+            uniform sampler2D tDots; uniform float uDots; uniform float uDotRep; uniform vec3 uDotTint;`)
+          .replace('#include <map_fragment>', `#include <map_fragment>
+            float siteAo = texture2D( tAo, vMapUv ).r;
+            float libAo = texture2D( tLib, clamp( ( vMapUv - uLib.xy ) / uLib.zw, 0.0, 1.0 ) ).r;
+            // two sizes of dot: the fine one reads next to the camera, the larger one from further away
+            float dot2 = max( texture2D( tDots, vMapUv * uDotRep ).r * 0.5, texture2D( tDots, vMapUv * uDotRep * 4.0 ).r * 0.6 );
+            diffuseColor.rgb *= mix( vec3( 1.0 ), uDotTint, dot2 * uDots );
+            diffuseColor.rgb *= mix( 1.0, siteAo, uAo ) * mix( 1.0, libAo, uLibAo );`);
+      };
+      return m;
+    };
+    const G = acc();
+    addTop(G, d.street, lv.street); addTop(G, d.plate, lv.plate);
+    const ground = new THREE.Mesh(geo(G), groundMat(false));
+    const P = acc();
+    addTop(P, d.green, lv.green);
+    const planted = new THREE.Mesh(geo(P), groundMat(true));
+    ground.receiveShadow = planted.receiveShadow = true;
+    // the cut edges of the cards
+    const E = acc();
+    addWalls(E, d.plate, [lv.street - 0.004, lv.plate], [1, 1]);
+    addWalls(E, d.green, [lv.plate - 0.004, lv.green], [1, 1]);
+    const edges = new THREE.Mesh(geo(E), new THREE.MeshStandardMaterial({ color: d.pal.edge, roughness: 0.96, envMapIntensity: 0.2 }));
+    edges.receiveShadow = true;
+    // the neighbours: plain blocks, a little darker towards the ground
+    const B = acc();
+    for (const b of d.bld) {
+      addWalls(B, b, [0, Math.min(0.5, b.h * 0.4), b.h], [0.78, 0.95, 1]);
+      addTop(B, b, b.h);
+    }
+    const blocks = new THREE.Mesh(geo(B, true), new THREE.MeshStandardMaterial({ color: d.pal.block, vertexColors: true, roughness: 0.92, envMapIntensity: 0.25 }));
+    blocks.castShadow = blocks.receiveShadow = true;
+    // a plain disc just under the street level, so no hairline between two cards ever shows the floor
+    const under = new THREE.Mesh(new THREE.CircleGeometry(SITE.r - 0.01, 256), new THREE.MeshStandardMaterial({ color: d.pal.street, roughness: 1 }));
+    under.rotation.x = -Math.PI / 2; under.position.set(SITE.x, lv.street - 0.006, SITE.z);
+    site.add(ground, planted, edges, blocks, under);
+    renderer.shadowMap.needsUpdate = true;
+    // names, set in the page's own typeface and laid flat on the model like lettering on a base
+    const letter = () => {
+      for (const L of d.labels) {
+        const px = 150, cv = document.createElement('canvas'), c = cv.getContext('2d');
+        const font = `400 ${px}px Hadassah, David, serif`;
+        c.font = font; c.letterSpacing = '0.14em';
+        const w = Math.ceil(c.measureText(L.t).width + px * 0.6);
+        cv.width = w; cv.height = Math.ceil(px * 1.5);
+        c.fillStyle = '#000'; c.fillRect(0, 0, cv.width, cv.height);
+        c.font = font; c.letterSpacing = '0.14em'; c.direction = 'rtl'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillStyle = '#fff'; c.fillText(L.t, cv.width / 2, cv.height / 2);
+        const t = tex(cv, false, THREE.ClampToEdgeWrapping);
+        t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        const m = new THREE.Mesh(new THREE.PlaneGeometry((L.s * cv.width) / px, (L.s * cv.height) / px), new THREE.MeshStandardMaterial({
+          color: 0x3b362e, alphaMap: t, transparent: true, opacity: 0.62, depthWrite: false, roughness: 1,
+          polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+        }));
+        m.geometry.rotateX(-Math.PI / 2);
+        m.position.set(L.x, L.y + 0.008, L.z);
+        m.rotation.y = -THREE.MathUtils.degToRad(L.a);
+        m.receiveShadow = true;
+        site.add(m);
+      }
+    };
+    (document.fonts ? document.fonts.load('400 150px Hadassah', 'אבג').then(letter, letter) : Promise.resolve().then(letter));
+    renderer.compile(scene, camera);
+  }).catch((err) => console.warn('site model off', err));
 
   // ---------- post
   const composer = new EffectComposer(renderer);
   composer.setPixelRatio(DPR);
-  composer.setSize(innerWidth, innerHeight);
-  composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(small ? new RenderPass(scene, camera) : new SceneMsaaPass(scene, camera, DPR > 1.4 ? 2 : 4));
   // ambient occlusion grounds the model the way a photographed maquette is grounded (desktop only)
+  let bokeh = null, gtao = null;
   if (!small) {
-    const gtao = new GTAOPass(scene, camera, innerWidth, innerHeight);
-    gtao.updateGtaoMaterial({ radius: 0.8, distanceExponent: 1.5, thickness: 1.2, scale: 1.1, samples: 16, distanceFallOff: 1, screenSpaceRadius: false });
-    gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
+    gtao = new GTAOPass(scene, camera, innerWidth, innerHeight);
+    gtao.updateGtaoMaterial({ radius: 0.8, distanceExponent: 1.5, thickness: 1.2, scale: 1.1, samples: 10, distanceFallOff: 1, screenSpaceRadius: false });
+    gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 5, rings: 2, samples: 10 });
     composer.addPass(gtao);
+    // a shallow depth of field, as when a model is photographed from close by: the building
+    // stays sharp (a zone of ±range around the focus), the base softens before and behind it
+    bokeh = new ShaderPass(DofShader);
+    bokeh.uniforms.tDepth.value = gtao.depthTexture;
+    bokeh.uniforms.near.value = camera.near; bokeh.uniforms.far.value = camera.far;
+    composer.addPass(bokeh);
   }
   const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.4, 0.5, 0.9);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
+  // the soft passes do not need every pixel: occlusion is computed at half size, the glow at a quarter
+  const sizePost = () => {
+    composer.setPixelRatio(DPR);
+    composer.setSize(innerWidth, innerHeight);
+    const w = Math.round((innerWidth * DPR) / 2), h = Math.round((innerHeight * DPR) / 2);
+    if (gtao) gtao.setSize(w, h);
+    if (bokeh) { bokeh.uniforms.aspect.value = innerWidth / innerHeight; bokeh.uniforms.texel.value.set(1 / w, 1 / h); }
+    bloom.setSize(w, h);
+  };
+  sizePost();
+  // if the machine cannot keep up, give up the costliest refinements one at a time
+  const perf = { t: 0, n: 0, skip: 90, step: 0 };
+  const degrade = () => {
+    perf.step++;
+    if (perf.step === 1 && bokeh) bokeh.enabled = false;
+    else if (perf.step <= 2 && gtao) { gtao.enabled = false; perf.step = 2; }
+    else if (perf.step <= 3 && DPR > 1) { DPR = 1; renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight, false); sizePost(); perf.step = 3; }
+  };
 
   // ---------- state
   let target = sample(TRACKS.monolith, 0);
@@ -576,20 +819,21 @@ export function createScene(canvas) {
   addEventListener('pointermove', (e) => { mouse.set((e.clientX / innerWidth) * 2 - 1, (e.clientY / innerHeight) * 2 - 1); });
 
   const C = {
-    day: { top: new THREE.Color('#9fb4c9'), mid: new THREE.Color('#e6e6e2'), bot: new THREE.Color('#d6cfc1'), fog: new THREE.Color('#e1e0db') },
-    night: { top: new THREE.Color('#050a17'), mid: new THREE.Color('#2a3550'), bot: new THREE.Color('#12141a'), fog: new THREE.Color('#1c2232') },
+    day: { top: new THREE.Color('#c9cdd0'), mid: new THREE.Color('#ebe9e4'), bot: new THREE.Color('#e3e0d9'), fog: new THREE.Color('#ebe9e4') },
+    dusk: { top: new THREE.Color('#7c8396'), mid: new THREE.Color('#d2bfae'), bot: new THREE.Color('#a59c92'), fog: new THREE.Color('#d2bfae') },
+    night: { top: new THREE.Color('#050912'), mid: new THREE.Color('#1c2334'), bot: new THREE.Color('#13151b'), fog: new THREE.Color('#1c2334') },
     under: { top: new THREE.Color('#070707'), mid: new THREE.Color('#0d0c0b'), bot: new THREE.Color('#070707'), fog: new THREE.Color('#0b0a09') },
   };
   const tmp = new THREE.Color(), sunDay = new THREE.Color('#fff1dc'), sunNight = new THREE.Color('#8ea6d8');
-  const mix3 = (k, n, u) => tmp.copy(C.day[k]).lerp(C.night[k], n).lerp(C.under[k], u);
+  const mix3 = (k, n, u) => (n < 0.5 ? tmp.copy(C.day[k]).lerp(C.dusk[k], smooth(n * 2)) : tmp.copy(C.dusk[k]).lerp(C.night[k], smooth(n * 2 - 1))).lerp(C.under[k], u);
 
   // hotspots
   const hotEls = [];
   const HOTS = [
     { p: new THREE.Vector3(2.2, 0.55, 2.1), t: 'קומות הזכוכית' },
-    { p: new THREE.Vector3(Q[3].p[0], Q[3].h, Q[3].p[1]), t: 'הקצה הדרומי, החלק הגבוה' },
+    { p: new THREE.Vector3(Q[3].p[0], Q[3].h, Q[3].p[1]), t: 'הקצה הצפוני, החלק הגבוה' },
     { p: new THREE.Vector3(OCULUS.x, roofY(OCULUS.x, OCULUS.z), OCULUS.z), t: 'צוהר וטבעת סולארית' },
-    { p: new THREE.Vector3(7.55, 1.72, 1.4), t: 'חלונות בעומק האבן' },
+    { p: new THREE.Vector3(4.4, 1.72, 2.63), t: 'חלונות בעומק האבן' },   // on the Ruppin side, clear of the chapter card
   ];
   let hotIdx = -1;
   const hotLayer = document.querySelector('.hotspots');
@@ -601,12 +845,18 @@ export function createScene(canvas) {
   });
 
   let active = false, last = performance.now(), time = 0;
-  const v3 = new THREE.Vector3(), right = new THREE.Vector3(), up = new THREE.Vector3();
+  const v3 = new THREE.Vector3(), right = new THREE.Vector3(), up = new THREE.Vector3(), fwd = new THREE.Vector3();
+  const BOX = Q.flatMap((q) => [new THREE.Vector3(q.p[0], 0, q.p[1]), new THREE.Vector3(q.p[0], q.h, q.p[1])]);
 
   function frame(now) {
     requestAnimationFrame(frame);
-    const dt = Math.min(0.05, (now - last) / 1000); last = now; time += dt;
+    const raw = now - last;
+    const dt = Math.min(0.05, raw / 1000); last = now; time += dt;
     if (!active) return;
+    if (raw < 120 && perf.step < 3 && document.visibilityState === 'visible') {
+      if (perf.skip > 0) perf.skip--;
+      else { perf.t += raw; if (++perf.n === 120) { if (perf.t / perf.n > 24) degrade(); perf.t = perf.n = 0; } }
+    }
     if (introStart >= 0) intro = clamp01((now - introStart) / 2600);
     // soft follow: the camera trails the scroll position by ~0.25 s
     const k = 1 - Math.pow(0.012, dt);
@@ -644,13 +894,27 @@ export function createScene(canvas) {
     skyU.mid.value.copy(mix3('mid', n, cur.under));
     skyU.bot.value.copy(mix3('bot', n, cur.under));
     scene.fog.color.copy(mix3('fog', n, cur.under));
-    scene.fog.near = lerp(40, 8, cur.under); scene.fog.far = lerp(160, 60, cur.under);
+    scene.fog.near = lerp(FOG[0], 8, cur.under); scene.fog.far = lerp(FOG[1], 60, cur.under);
+    floorMat.color.copy(mix3('bot', n, cur.under));
+    siteU.uLibAo.value = shell * 0.78;
+    const glow = smooth(clamp01((n - 0.2) / 0.8)) * shell;
+    lamps.forEach((l) => { l.intensity = 22 * glow; });
+    if (bokeh) {
+      // focus on the building as a whole: its nearest and farthest corners bound the sharp zone
+      camera.getWorldDirection(fwd);
+      let zn = 1e9, zf = -1e9;
+      for (const p of BOX) { const z = v3.copy(p).sub(camera.position).dot(fwd); zn = Math.min(zn, z); zf = Math.max(zf, z); }
+      bokeh.uniforms.focus.value = (zn + zf) / 2;
+      bokeh.uniforms.range.value = (zf - zn) / 2 + 0.5;
+      bokeh.uniforms.aperture.value = DOF.aperture * shell;      // no blur while the building is still a line drawing
+    }
     sun.intensity = lerp(3.0, 0.03, n) * (1 - cur.under);
     sun.color.copy(sunDay).lerp(sunNight, n);
     hemi.intensity = lerp(1.0, 0.09, n) * (1 - cur.under * 0.7);
     scene.environmentIntensity = lerp(0.35, 0.02, n);
     renderer.toneMappingExposure = lerp(1.0, 0.95, n);
-    bloom.strength = lerp(0.12, 0.75, Math.max(n, cur.under));
+    bloom.strength = lerp(0, 0.75, smooth(clamp01((Math.max(n, cur.under) - 0.06) / 0.94)));
+    bloom.enabled = bloom.strength > 0.004;          // by day there is nothing to glow, and the pass is not run
 
     // hotspots
     hotEls.forEach((el, i) => {
@@ -674,13 +938,13 @@ export function createScene(canvas) {
   addEventListener('resize', () => {
     camera.aspect = innerWidth / innerHeight; frameOffset(); camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight, false);
-    composer.setSize(innerWidth, innerHeight);
+    sizePost();
   });
 
   renderer.compile(scene, camera);
 
   return {
-    debug: () => ({ cur, target, cam: camera.position.clone() }),
+    debug: () => ({ cur, target, cam: camera.position.clone(), lamps, bloom, bokeh, gtao, siteU, sun, hemi, scene, camera, renderer, site, composer, perf, setIntro(v) { intro = v; introStart = -1; } }),
     playIntro() { if (introStart < 0 && intro < 1) introStart = performance.now(); },
     skipIntro() { intro = 1; introStart = -1; },
     set(track, p) { target = sample(TRACKS[track], clamp01(p)); },

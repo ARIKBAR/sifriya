@@ -1,5 +1,4 @@
-import { createSequence } from './seq.js';
-import { createBuild } from './build.js';
+import { createScene } from './scene.js';
 import { createDepthPhoto } from './depth.js';
 import { createStoneWall } from './stones.js';
 import { starReveal } from './aperture.js';
@@ -80,14 +79,15 @@ try {
   hero.ready.catch(() => {});
 } catch (err) { console.warn('hero depth effect off', err); }
 
-/* ------------------------------------------------------------ the tour: real camera moves, scrubbed by scroll */
-const scene = null; // the 3D model is no longer used
-const tour = createSequence($('.seq'), [
-  { dir: 'assets/seq/1-base', count: 72 },
-  { dir: 'assets/seq/2-mass', count: 72 },
-  { dir: 'assets/seq/3-roof', count: 72 },
-  { dir: 'assets/seq/4-dusk', count: 72 },
-]);
+/* ------------------------------------------------------------ 3D */
+let scene = null;
+try {
+  scene = createScene($('.gl'));
+  window.__scene = scene;
+} catch (err) {
+  console.warn('WebGL unavailable, falling back to images', err);
+  document.body.classList.add('no-gl');
+}
 
 /* ------------------------------------------------------------ loader
    A wall of the building's stones. The hero first shows through the star-shaped
@@ -141,19 +141,23 @@ ScrollTrigger.create({
 });
 gsap.to('.hero__title, .hero__bottom, .hero__top', { yPercent: -18, opacity: 0, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: '80% top', scrub: true } });
 
-/* ------------------------------------------------------------ tour ↔ scroll */
-ScrollTrigger.create({ trigger: '#monolith', start: 'top top', end: 'bottom bottom', onUpdate: (s) => tour.set(s.progress) });
-ScrollTrigger.create({ trigger: '#monolith', start: 'top 300%', once: true, onEnter: () => tour.preload() });
-
-/* ------------------------------------------------------------ how it is made: the model assembles itself */
+/* ------------------------------------------------------------ 3D ↔ scroll */
 {
-  let build = null;
-  try { build = createBuild($('.build__gl')); } catch (err) { console.warn('model off', err); }
-  const steps = $$('.build__steps li'), AT = [0, 0.18, 0.36, 0.52, 0.68, 0.84];
-  const mark = (p) => { let k = 0; AT.forEach((v, i) => { if (p >= v) k = i; }); steps.forEach((li, i) => li.classList.toggle('is-on', i === k)); };
-  mark(0);
-  ScrollTrigger.create({ trigger: '#build', start: 'top top', end: 'bottom bottom', onUpdate: (s) => { build && build.set(s.progress); mark(s.progress); } });
-  ScrollTrigger.create({ trigger: '#build', start: 'top bottom', end: 'bottom top', onToggle: (s) => build && build.setActive(s.isActive) });
+  const gl = $('.gl'), el = $('#monolith');
+  const prog = ScrollTrigger.create({ trigger: el, start: 'top top', end: 'bottom bottom', onUpdate: (s) => scene && scene.set('monolith', s.progress) });
+  ScrollTrigger.create({
+    trigger: el, start: 'top bottom', end: 'bottom top',
+    onToggle: (s) => {
+      if (s.isActive && scene) {
+        // cut, don't fly: the camera starts exactly where the section wants it
+        scene.set('monolith', prog.progress);
+        scene.jump();
+        scene.playIntro();
+      }
+      scene && scene.setActive(s.isActive);
+      gl.classList.toggle('is-on', s.isActive);
+    },
+  });
 }
 
 /* ------------------------------------------------------------ site */
@@ -188,7 +192,7 @@ ScrollTrigger.create({ trigger: '#monolith', start: 'top 300%', once: true, onEn
   };
   const sync = (s) => {
     const p = s.progress;
-    show(p < 0.24 ? 0 : p < 0.49 ? 1 : p < 0.74 ? 2 : 3);
+    show(p < 0.23 ? 0 : p < 0.53 ? 1 : p < 0.8 ? 2 : 3);
     bar.style.transform = `scaleY(${p})`;
   };
   ScrollTrigger.create({

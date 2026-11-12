@@ -45,3 +45,7 @@
 ## שרטוטים ששימשו לבניית המודל
 
 התוכניות והחתכים של Herzog & de Meuron, ב-[Arquitectura Viva](https://arquitecturaviva.com/works/biblioteca-nacional-de-israel-jerusalen).
+
+## הסביבה של המודל התלת־ממדי
+
+תוכנית הרחובות, המגרשים וקווי הבניינים שסביב הספרייה (`assets/site/`): © תורמי [OpenStreetMap](https://www.openstreetmap.org/copyright), רישיון ODbL. העותק שממנו נבנה המקט שמור ב-`tools/cache/osm.json`.

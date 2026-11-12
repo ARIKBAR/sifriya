@@ -140,12 +140,7 @@ section{position:relative}
 
 /* ============ monolith ============ */
 .monolith{height:540vh}
-.stage{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--ink)}
-.seq{position:absolute;inset:0;width:100%;height:100%;display:block}
-.stage::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,rgba(12,11,9,.45),rgba(12,11,9,0) 30%)}
-.stage__rail{z-index:1;color:var(--paper)!important;text-shadow:0 1px 10px rgba(0,0,0,.4)}
-.stage__rail .stage__bar{background:rgba(237,231,219,.3)!important}.stage__rail .stage__bar i{background:var(--paper)!important}
-.stage__chapters{z-index:1}
+.stage{position:sticky;top:0;height:100vh;overflow:hidden}
 .stage__chapters{position:absolute;right:var(--gut);bottom:12vh;width:min(420px,calc(100vw - 2*var(--gut)))}
 .chap{position:absolute;bottom:0;right:0;width:100%;padding:26px 28px 28px;border-radius:20px;background:rgba(237,231,219,.86);color:var(--ink);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);opacity:0;visibility:hidden}
 .chap__title{font:300 clamp(40px,4.2vw,68px)/.95 var(--f);margin:10px 0 14px;letter-spacing:-.02em}
@@ -159,22 +154,6 @@ section{position:relative}
 .stage.is-night .stage__rail,.stage.is-night .stage__note{color:var(--paper)}
 .stage.is-night .stage__bar{background:var(--line-l)}.stage.is-night .stage__bar i{background:var(--paper)}
 @media (max-width:720px){.stage__rail{top:84px;transform:none}.stage__bar{height:70px}.stage__chapters{bottom:4vh}.chap{padding:18px 20px}.chap__title{font-size:36px;margin:6px 0 8px}.chap__body{font-size:16px;line-height:1.5}.stage__note{display:none}}
-
-/* ============ how it is made (Blender model) ============ */
-.build{height:520vh;background:#e7e3da}
-.build__pin{position:sticky;top:0;height:100vh;overflow:hidden}
-.build__gl{position:absolute;inset:0;width:100%;height:100%;display:block}
-.build__text{position:absolute;top:50%;right:var(--gut);transform:translateY(-50%);width:min(380px,calc(100vw - 2*var(--gut)));padding:26px 28px;border-radius:20px;background:rgba(237,231,219,.84);color:var(--ink);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.build__title{font:300 clamp(36px,3.6vw,58px)/1 var(--f);margin:10px 0 18px;letter-spacing:-.02em}
-.build__steps{list-style:none;display:grid;gap:2px;counter-reset:s}
-.build__steps li{display:grid;grid-template-columns:2em 1fr;padding:9px 0;border-top:1px solid var(--line);opacity:.32;transition:opacity .5s var(--ease)}
-.build__steps li::before{counter-increment:s;content:"0" counter(s);font:400 13px/1.6 var(--f);color:var(--mute)}
-.build__steps li.is-on{opacity:1}
-.build__steps b{font:500 17px/1.3 var(--f)}
-.build__steps span{grid-column:2;font-size:15px;line-height:1.45;color:rgba(22,20,15,.7);max-height:0;overflow:hidden;transition:max-height .5s var(--ease)}
-.build__steps li.is-on span{max-height:4em;margin-top:4px}
-.build__note{margin-top:14px;font:400 12px/1.3 var(--f);color:var(--mute)}
-@media (max-width:720px){.build__text{top:auto;bottom:4vh;transform:none;padding:18px 20px}.build__title{font-size:30px;margin:6px 0 10px}.build__steps li:not(.is-on){display:none}}
 
 /* ============ facade ============ */
 .facade{padding:22vh var(--gut) 18vh}
