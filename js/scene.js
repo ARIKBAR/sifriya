@@ -25,10 +25,12 @@ const rr = (a, b) => a + (b - a) * rnd();
    points to (x, z) ≈ (-0.75, -0.66).
    Plan: close to a triangle, on a triangular plot. Four facades with sharp
    corners: the long side on Ruppin (A→B, +z, faces south-west), the short
-   southern tip (B→C), the long back on Kaplan (C→D) and the straight north
-   facade (D→A), which is the highest part.
-   Three facades curve gently inward in plan. The roof is concave: it dips
-   between the raised north end and the slightly raised southern tip.
+   southern tip facing the Israel Museum (B→C), the long back on Kaplan (C→D)
+   and the north end next to the Ministry of Finance (D→A).
+   As the architects describe it, the east, west and north facades curve
+   gently inward in plan and the south one is straight; both narrow ends are
+   raised and the concave roof dips between them. In aerial photographs the
+   north end is the higher of the two.
    ========================================================================== */
 const Q = [
   { p: [-8.5, 2.4], h: 3.45, r: 0.12 },  // A  Ruppin side, north end
@@ -37,7 +39,7 @@ const Q = [
   { p: [-3.7, -4.5], h: 3.95, r: 0.06 }, // D  the peak (north end, at the back)
 ];
 const SAG = [0.75, 0.05, 0.85, 0.1];     // sag of each roof edge   A→B, B→C, C→D, D→A
-const BOW = [0.32, 0.06, 0.55, 0];       // inward curve of each facade in plan (the north one is straight)
+const BOW = [0.32, 0, 0.55, 0.2];        // inward curve of each facade in plan (the south one is straight)
 const GH = 1.05;                          // the two glazed ground floors under the stone mass
 const OCULUS = { x: -1.3, z: -0.25, r: 2.25, glass: 1.4 }; // skylight inside a ring of PV modules
 const SKY_LIGHT = { x: 5.5, z: 0.75, r: 0.26 };
@@ -831,7 +833,7 @@ export function createScene(canvas) {
   const hotEls = [];
   const HOTS = [
     { p: new THREE.Vector3(2.2, 0.55, 2.1), t: 'קומות הזכוכית' },
-    { p: new THREE.Vector3(Q[3].p[0], Q[3].h, Q[3].p[1]), t: 'הקצה הצפוני, החלק הגבוה' },
+    { p: new THREE.Vector3(Q[3].p[0], Q[3].h, Q[3].p[1]), t: 'הקצה הצפוני, מול משרד האוצר' },
     { p: new THREE.Vector3(OCULUS.x, roofY(OCULUS.x, OCULUS.z), OCULUS.z), t: 'צוהר וטבעת סולארית' },
     { p: new THREE.Vector3(4.4, 1.72, 2.63), t: 'חלונות בעומק האבן' },   // on the Ruppin side, clear of the chapter card
   ];
