@@ -41,6 +41,7 @@
 ## נוצר לצורך האתר
 
 - hero-depth.jpg: מפת עומק של hero.jpg (Depth Anything 3, דרך Magnific).
+- favicon.svg, favicon.ico, apple-touch-icon.png (בתיקייה הראשית): הכוכב שבין ארבע אבנים, דולק, על הרקע הכהה של האתר. נוצרו ב-`tools/make_favicon.py`.
 - dusk-facade-windows.jpg: רק החלונות המוארים מתוך dusk-facade.jpg (כל השאר שחור). הקובץ נוצר בסקריפט שמשאיר את הפיקסלים החמים והבהירים, ומשמש בפרק 09 כדי להדליק את החלונות על הצילום המוחשך.
 
 ## הלוגו של הספרייה הלאומית
