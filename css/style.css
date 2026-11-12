@@ -59,25 +59,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .hot__txt{background:rgba(237,231,219,.88);backdrop-filter:blur(8px);padding:6px 11px;border-radius:20px}
 
 /* ============ nav ============ */
-.nav{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:80;width:min(760px,calc(100vw - 28px))}
-.nav__pill{display:flex;align-items:center;justify-content:space-between;height:54px;padding:0 8px;border-radius:40px;background:rgba(22,20,15,.5);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line-l);color:var(--paper)}
-.nav__menu{display:flex;align-items:center;gap:12px;padding:10px 14px;font:500 15px/1 var(--f)}
+.nav{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:80;width:min(680px,calc(100vw - 28px))}
+/* three parts, mirrored: the chapters on the right, the logo in the exact middle, the windows on the left */
+.nav__pill{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:54px;padding:0 7px;border-radius:40px;background:rgba(22,20,15,.5);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line-l);color:var(--paper)}
+.nav__menu,.wins{display:flex;align-items:center;gap:12px;height:40px;padding:0 15px;border-radius:30px;font:500 15px/1 var(--f);transition:background .4s}
+.nav__menu{justify-self:start}
+.wins{justify-self:end}
+.nav__menu:hover,.nav.is-open .nav__menu,.wins:hover,.nav.is-wins .wins{background:rgba(237,231,219,.1)}
 .nav__burger{width:26px;height:8px;position:relative;display:block}
 .nav__burger i{position:absolute;right:0;height:1px;background:currentColor;width:100%;transition:transform .6s var(--ease),width .6s var(--ease)}
 .nav__burger i:first-child{top:0}.nav__burger i:last-child{bottom:0;width:62%}
 .nav.is-open .nav__burger i:first-child{transform:translateY(3.5px) rotate(12deg)}
 .nav.is-open .nav__burger i:last-child{transform:translateY(-3.5px) rotate(-12deg);width:100%}
-.nav__logo{display:flex;align-items:center;padding:8px 4px;color:var(--paper)}
-.nav__end{display:flex;align-items:center;gap:6px}
+.nav__logo{justify-self:center;display:flex;align-items:center;padding:8px 6px;color:var(--paper)}
 /* the National Library's logo, drawn as a mask so it takes the colour of the text */
 .nli{display:block;background:currentColor;-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat}
 .nli--line{width:207px;height:22px;-webkit-mask-image:url(../assets/logo/nli-logo-line.svg);mask-image:url(../assets/logo/nli-logo-line.svg)}
 .nli--mark{display:none;width:30px;height:23px;-webkit-mask-image:url(../assets/logo/nli-mark.svg);mask-image:url(../assets/logo/nli-mark.svg)}
 .nli--full{width:clamp(250px,38vw,600px);aspect-ratio:772.97/192.66;-webkit-mask-image:url(../assets/logo/nli-logo.svg);mask-image:url(../assets/logo/nli-logo.svg)}
-.nav__cta{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:30px;background:var(--paper);color:var(--ink);font:500 15px/1 var(--f);transition:background .4s}
-.nav__cta:hover{background:var(--stone)}
-.nav__cta svg{width:20px;height:9px;transition:transform .5s var(--ease)}
-.nav__cta:hover svg{transform:translateX(-4px)}
 .menu{position:absolute;top:0;left:0;right:0;z-index:-1;padding:86px 28px 28px;border-radius:28px;background:rgba(22,20,15,.86);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line-l);clip-path:inset(0 0 calc(100% - 54px) 0 round 28px);opacity:0;pointer-events:none;transition:clip-path .8s var(--ease-io),opacity .4s}
 .nav.is-open .menu{clip-path:inset(0 0 0 0 round 28px);opacity:1;pointer-events:auto}
 .menu ol{list-style:none;display:grid}
@@ -87,8 +86,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .menu a b{font-weight:300;display:inline-block;transition:transform .6s var(--ease),color .4s}
 .menu a:hover b{transform:translateX(-8px);color:var(--stone)}
 /* the row of windows in the bar: one star per hidden window, lit when found */
-.wins{display:flex;align-items:center;height:40px;padding:0 12px;border-radius:30px;transition:background .4s}
-.wins:hover,.nav.is-wins .wins{background:rgba(237,231,219,.1)}
 .wins__row{display:flex;gap:5px}
 .wins__row i,.lit__stars i,.wstar{display:block;width:10px;height:10px;flex:none;transition:filter .6s}
 .wins__row b,.lit__stars b,.wstar b{display:block;width:100%;height:100%;background:rgba(237,231,219,.34);-webkit-mask:var(--star) center/100% 100% no-repeat;mask:var(--star) center/100% 100% no-repeat;transition:background .6s}
@@ -118,14 +115,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .wpanel__end{padding:10px 16px;border-radius:30px;background:var(--paper);color:var(--ink);font:500 14px/1 var(--f)}
 .wpanel__reset{color:var(--mute);font-size:13px}
 .wpanel__reset:hover{color:var(--paper)}
-@media (max-width:760px){.nav__cta span{display:none}.nav__cta{padding:11px 13px}}
+@media (max-width:720px){.nav__menu > span:last-child,.wins__label{display:none}}
 @media (max-width:560px){
-  .nav__menu > span:last-child{display:none}
-  .nav__cta{display:none}
-  .nli--line{width:150px;height:16px}
-  .wins{padding:0 9px}
-  .wins__row{gap:4px}
-  .wins__row i{width:9px;height:9px}
+  .nav__menu,.wins{padding:0 8px}
+  .nli--line{width:141px;height:15px}
+  .wins__row{gap:3px}
+  .wins__row i{width:8px;height:8px}
   .wpanel{padding:72px 18px 16px}
 }
 @media (max-width:374px){.nli--line{display:none}.nli--mark{display:block}}
