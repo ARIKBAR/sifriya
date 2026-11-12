@@ -376,11 +376,12 @@ section{position:relative}
 .timeline__line i{display:block;height:100%;background:var(--ink);transform-origin:right;transform:scaleX(0)}
 
 /* ============ footer ============ */
-.foot{padding:16vh 0 34px;overflow:hidden}
-/* the signature: the designer's name and a WhatsApp link */
-.foot__sign{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:28px 40px;padding:0 var(--gut) 6vh;border-bottom:1px solid var(--line-l)}
-.foot__name{font:300 clamp(46px,6.6vw,118px)/.9 var(--f);letter-spacing:-.02em}
-.foot__grid{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:4vw;padding:8vh var(--gut) 7vh;align-items:start}
+.foot{padding:10vh 0 30px;overflow:hidden}
+.foot__grid{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:4vw;padding:8vh var(--gut) 6vh;align-items:start;border-top:1px solid var(--line-l)}
+/* the designer's name, small, at the very end; it opens a WhatsApp chat */
+.foot__credit{padding:0 var(--gut);font:400 13px/1.4 var(--f);color:var(--mute)}
+.foot__credit a{transition:color .4s}
+.foot__credit a:hover{color:var(--paper)}
 .foot__grid p:not(.label){margin-top:12px;color:var(--mute-l);font-size:.95em}
 .foot__grid a{border-bottom:1px solid var(--line-l);transition:color .4s,border-color .4s}
 .foot__grid a:hover{color:var(--stone);border-color:var(--stone)}
