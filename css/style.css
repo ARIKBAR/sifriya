@@ -17,7 +17,7 @@
 }
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{background:var(--ink);color:var(--paper);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{background:var(--ink);color:var(--paper);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html.lenis,html.lenis body{height:auto}
 .lenis.lenis-smooth{scroll-behavior:auto!important}
 body{font-family:var(--f);font-weight:400;font-size:clamp(17px,1.15vw,20px);line-height:1.6;background:var(--ink);overflow-x:hidden}
@@ -146,7 +146,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @media (max-width:720px){.chapter-ind{display:none}}
 
 /* ============ shared ============ */
-main{position:relative;z-index:1}
+/* nothing may stick out sideways: on a phone that lets the whole page slide. clip, unlike hidden, keeps the sticky sections working */
+main{position:relative;z-index:1;overflow-x:clip}
 section{position:relative}
 .paper{background:var(--paper);color:var(--ink)}
 .ink{background:var(--ink);color:var(--paper)}

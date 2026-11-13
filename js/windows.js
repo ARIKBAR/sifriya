@@ -220,7 +220,11 @@ export function initWindows({ scene, scrollTo, closeMenu = () => {} }) {
     el.style.setProperty('--d', `${((1.2 + i * 2.3) % 8).toFixed(1)}s`);   // the glints take turns
     const it = { w, i, el, p: null, near: 0, inView: false, loc: null, a: null };
     if (w.at.model) { layer.appendChild(el); it.a = scene.anchor(el, w.at.model, w.at.n); }
-    else it.loc = w.at.joints ? jointsPlace(el) : photoPlace(w.at, el);
+    else {
+      it.loc = w.at.joints ? jointsPlace(el) : photoPlace(w.at, el);
+      // in place from the start: left in the corner of its host, a window's glow reaches past the edge of a phone screen
+      if (it.loc) it.loc.at();
+    }
     el.addEventListener('click', () => light(it));
     return it;
   });
